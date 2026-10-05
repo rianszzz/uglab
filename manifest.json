@@ -1,0 +1,71 @@
+{
+  "manifest_version": 3,
+  "name": "UGLab",
+  "version": "2.0.0",
+  "description": "Auto-jawab soal praktikum Gunadarma (iLab & v-class) — Hybrid: Ollama llama3 (teks) + Gemini 2.0 Flash (vision)",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "permissions": [
+    "tabs",
+    "scripting",
+    "storage",
+    "activeTab",
+    "windows",
+    "clipboardWrite"
+  ],
+  "host_permissions": [
+    "https://ujian.gunadarma.ac.id/*",
+    "https://praktikum.gunadarma.ac.id/*",
+    "https://v-class.gunadarma.ac.id/*",
+    "https://elearning.gunadarma.ac.id/*",
+    "https://openrouter.ai/*",
+    "https://api.groq.com/*",
+    "https://api.sambanova.ai/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://gemini.google.com/*",
+    "https://chatgpt.com/*",
+    "https://claude.ai/*",
+    "*://172.18.18.34/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://ujian.gunadarma.ac.id/*",
+        "https://praktikum.gunadarma.ac.id/*",
+        "https://v-class.gunadarma.ac.id/*",
+        "https://elearning.gunadarma.ac.id/*",
+        "*://172.18.18.34/*"
+      ],
+      "js": [
+        "src/lms-content.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://gemini.google.com/*",
+        "https://chatgpt.com/*",
+        "https://claude.ai/*"
+      ],
+      "js": [
+        "src/ai-injector.js"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+  "background": {
+    "service_worker": "src/background.js"
+  }
+}

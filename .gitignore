@@ -1,0 +1,30 @@
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+
+# Operating System
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor & IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build & Logs
+node_modules/
+dist/
+build/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

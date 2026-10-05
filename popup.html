@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UGLAB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Bebas+Neue&display=swap"
+    rel="stylesheet" />
+  <style>
+    :root {
+      --bg:        #E8E4D9;
+      --bg-card:   #F0EDE4;
+      --green:     #2A6B1A;
+      --green-mid: #3A8228;
+      --green-pill:#2D7A1C;
+      --green-dim: rgba(42, 107, 26, 0.10);
+      --black:     #141414;
+      --border:    #141414;
+      --text:      #141414;
+      --text-muted:#6B6864;
+      --white:     #FAFAF7;
+      --error:     #C0392B;
+      --warning:   #B07D10;
+      --radius:    14px;
+      --radius-sm: 8px;
+      --radius-pill: 999px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 360px;
+      min-height: 480px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
+      overflow-x: hidden;
+    }
+
+    .container { position: relative; }
+
+    /* ── Header ── */
+    .header {
+      padding: 14px 18px 12px;
+      border-bottom: 1.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .logo-img {
+      height: 56px;
+      width: auto;
+      object-fit: contain;
+      object-position: left center;
+    }
+
+    .header-sub {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      padding-left: 1px;
+    }
+
+    .version-badge {
+      font-size: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--green);
+      background: var(--green-dim);
+      border: 1.5px solid var(--green);
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      align-self: flex-start;
+      flex-shrink: 0;
+    }
+
+    /* ── Status Bar — IDLE style ── */
+    .status-bar {
+      margin: 14px 18px 0;
+      padding: 10px 13px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 12px;
+      color: var(--text-muted);
+      transition: all 0.25s ease;
+      min-height: 38px;
+      position: relative;
+      /* corner brackets */
+    }
+
+    /* corner bracket decoration */
+    .status-bar::before,
+    .status-bar::after {
+      content: '';
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-color: var(--border);
+      border-style: solid;
+    }
+    .status-bar::before {
+      top: -2px; left: -2px;
+      border-width: 2px 0 0 2px;
+      border-radius: 2px 0 0 0;
+    }
+    .status-bar::after {
+      bottom: -2px; right: -2px;
+      border-width: 0 2px 2px 0;
+      border-radius: 0 0 2px 0;
+    }
+
+    .status-bar.active {
+      border-color: var(--green);
+      background: var(--green-dim);
+      color: var(--green);
+    }
+    .status-bar.error {
+      border-color: var(--error);
+      background: rgba(192, 57, 43, 0.07);
+      color: var(--error);
+    }
+    .status-bar.success {
+      border-color: var(--green);
+      background: var(--green-dim);
+      color: var(--green);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      flex-shrink: 0;
+    }
+    .status-bar.active .status-dot { animation: pulse 1.2s ease infinite; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.45; transform: scale(0.65); }
+    }
+
+    /* ── Section ── */
+    .section { padding: 14px 18px 0; }
+
+    .section-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+      opacity: 0.25;
+    }
+
+    /* ── Question Stats ── */
+    .q-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .q-stat-item {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 8px;
+      text-align: center;
+      position: relative;
+      transition: background 0.2s;
+    }
+
+    /* 4-corner bracket marks on cards */
+    .q-stat-item::before {
+      content: '';
+      position: absolute;
+      top: -2px; left: -2px;
+      width: 7px; height: 7px;
+      border-top: 2px solid var(--border);
+      border-left: 2px solid var(--border);
+      border-radius: 1px 0 0 0;
+    }
+    .q-stat-item::after {
+      content: '';
+      position: absolute;
+      bottom: -2px; right: -2px;
+      width: 7px; height: 7px;
+      border-bottom: 2px solid var(--border);
+      border-right: 2px solid var(--border);
+      border-radius: 0 0 1px 0;
+    }
+
+    .q-stat-item:hover { background: #E2DDCE; }
+
+    .q-stat-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 26px;
+      color: var(--black);
+      line-height: 1;
+    }
+    .q-stat-num.alt  { color: var(--green); }
+    .q-stat-num.warn { color: var(--warning); }
+
+    .q-stat-label {
+      font-size: 9px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+      margin-top: 3px;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Question Types ── */
+    .q-types { display: flex; flex-wrap: wrap; gap: 5px; }
+
+    .q-type-chip {
+      font-size: 10px;
+      padding: 3px 9px;
+      border-radius: var(--radius-pill);
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .q-type-chip.found {
+      background: var(--green-dim);
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    /* ── Mode Toggle ── */
+    .mode-toggle-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .mode-option {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s;
+    }
+    .mode-option.active {
+      border-color: var(--green);
+      background: var(--green-dim);
+    }
+    .mode-icon {
+      font-size: 16px;
+      filter: grayscale(1);
+      transition: filter 0.2s;
+    }
+    .mode-option.active .mode-icon { filter: grayscale(0); }
+    .mode-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .mode-sub {
+      font-size: 8px;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ── AI Engine Badge ── */
+    .ai-engine-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 11px;
+      background: var(--green-dim);
+      border: 1.5px solid var(--green);
+      border-radius: var(--radius-sm);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--green);
+      font-weight: 600;
+    }
+    .ai-engine-badge .engine-model {
+      font-weight: 400;
+      color: var(--green-mid);
+      opacity: 0.85;
+    }
+
+    /* ── Web Engine Sub-options ── */
+    .web-engine-wrap {
+      display: none;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .web-engine-wrap.visible {
+      display: grid;
+    }
+    .web-engine-option {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .web-engine-option.active {
+      border-color: var(--green);
+      background: var(--green-dim);
+    }
+    .web-engine-title {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* ── API Configuration Box ── */
+    .api-config-wrap {
+      display: none;
+      margin-top: 10px;
+      padding: 10px 12px;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+    .api-config-wrap.visible {
+      display: block;
+    }
+    .api-config-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .api-config-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .api-key-status {
+      font-size: 9px;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(192, 57, 43, 0.12);
+      color: var(--error);
+      border: 1px solid rgba(192, 57, 43, 0.25);
+    }
+    .api-key-status.saved {
+      background: var(--green-dim);
+      color: var(--green);
+      border: 1px solid rgba(42, 107, 26, 0.25);
+    }
+    .api-input-group {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .api-key-input {
+      flex: 1;
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 7px 9px;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .api-key-input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 2px rgba(42, 107, 26, 0.1);
+    }
+    .btn-key-visibility {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 6px 9px;
+      cursor: pointer;
+      font-size: 12px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .btn-key-visibility:hover {
+      background: var(--bg-card);
+    }
+    .api-config-hint {
+      margin-top: 6px;
+      font-size: 9px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    /* ── Prompt Textarea — IDLE box style ── */
+    .prompt-wrapper { position: relative; }
+
+    .prompt-textarea {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 10px 12px;
+      resize: none;
+      outline: none;
+      transition: all 0.2s;
+      min-height: 72px;
+      line-height: 1.6;
+    }
+    .prompt-textarea::placeholder { color: var(--text-muted); }
+    .prompt-textarea:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(42, 107, 26, 0.08);
+    }
+
+    .char-count {
+      position: absolute;
+      bottom: 8px; right: 10px;
+      font-size: 9px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+    }
+
+    /* ── Divider ── */
+    .divider {
+      margin: 14px 18px 0;
+      height: 1px;
+      background: var(--border);
+      opacity: 0.2;
+    }
+
+    /* ── Buttons ── */
+    .actions {
+      padding: 14px 18px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Main: green pill — like the image's bottom bar */
+    .btn-main {
+      width: 100%;
+      padding: 13px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-pill);
+      background: var(--green-pill);
+      color: var(--white);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 17px;
+      letter-spacing: 2.5px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-main::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent 60%);
+      pointer-events: none;
+    }
+    .btn-main .btn-sparkle {
+      font-size: 13px;
+      opacity: 0.85;
+    }
+    .btn-main:hover {
+      background: var(--green-mid);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(42, 107, 26, 0.3);
+    }
+    .btn-main:active  { transform: translateY(0); }
+    .btn-main:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .btn-main.loading { background: #1F5214; }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 9px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--text-muted);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-secondary:hover {
+      background: var(--bg-card);
+      color: var(--text);
+    }
+
+    .btn-clear {
+      width: 100%;
+      padding: 7px;
+      border: 1.5px solid rgba(192, 57, 43, 0.4);
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--error);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      opacity: 0.7;
+    }
+    .btn-clear:hover {
+      background: rgba(192, 57, 43, 0.07);
+      border-color: var(--error);
+      opacity: 1;
+    }
+
+    /* ── Progress ── */
+    .progress-wrap {
+      margin: 0 18px 14px;
+      display: none;
+    }
+    .progress-wrap.visible { display: block; }
+
+    .progress-bar {
+      height: 3px;
+      background: rgba(20,20,20,0.12);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--green);
+      border-radius: 10px;
+      transition: width 0.4s ease;
+      width: 0%;
+    }
+    .progress-fill.indeterminate {
+      width: 40%;
+      animation: slide 1.5s ease-in-out infinite;
+    }
+    @keyframes slide {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(350%); }
+    }
+
+    /* ── Log box — IDLE box style ── */
+    .log-section {
+      padding: 0 18px;
+      display: none;
+    }
+    .log-section.visible { display: block; }
+
+    .log-box {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 9px 11px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      max-height: 80px;
+      overflow-y: auto;
+      line-height: 1.7;
+      position: relative;
+    }
+
+    /* top-left bracket on log box */
+    .log-box::before {
+      content: '';
+      position: absolute;
+      top: -2px; left: -2px;
+      width: 8px; height: 8px;
+      border-top: 2px solid var(--border);
+      border-left: 2px solid var(--border);
+      border-radius: 1px 0 0 0;
+    }
+
+    .log-line     { margin: 0; }
+    .log-line.ok  { color: var(--green); }
+    .log-line.err { color: var(--error); }
+    .log-line.info{ color: #8B6914; }
+
+    /* ── Notice ── */
+    .notice {
+      margin: 14px 18px 0;
+      padding: 11px 13px;
+      background: rgba(176, 125, 16, 0.06);
+      border: 1.5px solid var(--warning);
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      color: var(--warning);
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .notice-icon { flex-shrink: 0; margin-top: 1px; }
+
+    /* ── Footer ── */
+    .footer {
+      padding: 8px 18px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .footer-link {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .footer-link:hover { color: var(--text); }
+
+    .footer-toggle {
+      font-size: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      font-family: inherit;
+      letter-spacing: 0.3px;
+    }
+    .footer-toggle:hover { color: var(--text); }
+
+    /* ── Decorative footer row ── */
+    .footer-deco {
+      font-size: 10px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(20,20,20,0.2); border-radius: 10px; }
+
+    /* ── Spinner ── */
+    .spin { animation: spinAnim 1s linear infinite; display: inline-block; }
+    @keyframes spinAnim { to { transform: rotate(360deg); } }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="logo-wrap">
+        <img class="logo-img" src="icons/logo.png" alt="UGLab" />
+        <div class="header-sub">iLab · v-class · Gunadarma</div>
+      </div>
+      <div class="version-badge">v2.0</div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar" id="statusBar">
+      <div class="status-dot"></div>
+      <span id="statusText">Mendeteksi halaman...</span>
+    </div>
+
+    <!-- Notice (shown when not on LMS) -->
+    <div class="notice" id="notOnLmsNotice" style="display:none">
+      <span class="notice-icon">⚠</span>
+      <span>Buka halaman kuis/soal di iLab atau v-class Gunadarma, lalu klik UGLab lagi.</span>
+    </div>
+
+    <!-- Question Stats -->
+    <div class="section" id="statsSection" style="display:none">
+      <div class="section-label">Soal Terdeteksi</div>
+      <div class="q-stats">
+        <div class="q-stat-item">
+          <div class="q-stat-num" id="statTotal">0</div>
+          <div class="q-stat-label">Total</div>
+        </div>
+        <div class="q-stat-item">
+          <div class="q-stat-num alt" id="statAnswered">0</div>
+          <div class="q-stat-label">Terjawab</div>
+        </div>
+        <div class="q-stat-item">
+          <div class="q-stat-num warn" id="statPending">0</div>
+          <div class="q-stat-label">Menunggu</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Question Types -->
+    <div class="section" id="typesSection" style="display:none">
+      <div class="section-label">Tipe Soal</div>
+      <div class="q-types" id="qTypesContainer"></div>
+    </div>
+
+    <!-- AI Engine Info & Mode Toggle -->
+    <div class="section">
+        <div class="section-title">Execution Mode</div>
+        <div class="mode-toggle-wrap">
+          <div class="mode-option" id="mode-api" data-mode="api">
+            <div class="mode-info">
+              <div class="mode-title">API Mode</div>
+              <div class="mode-sub">Fast (Groq/Gemini API)</div>
+            </div>
+          </div>
+          <div class="mode-option" id="mode-web" data-mode="web">
+            <div class="mode-info">
+              <div class="mode-title">Web Mode</div>
+              <div class="mode-sub">Visual (Gemini/ChatGPT)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NEW: Web Engine Sub-options (Gemini, ChatGPT, or Claude) -->
+        <div class="web-engine-wrap" id="webEngineWrap">
+          <div class="web-engine-option active" id="web-gemini" data-engine="gemini">
+            <div class="web-engine-title">Gemini</div>
+          </div>
+          <div class="web-engine-option" id="web-chatgpt" data-engine="chatgpt">
+            <div class="web-engine-title">ChatGPT</div>
+          </div>
+          <div class="web-engine-option" id="web-claude" data-engine="claude">
+            <div class="web-engine-title">Claude</div>
+          </div>
+        </div>
+
+        <!-- API Mode Key Configuration -->
+        <div class="api-config-wrap" id="apiConfigWrap">
+          <div class="api-config-header">
+            <span class="api-config-label">🔑 SambaNova / Groq API Key</span>
+            <span class="api-key-status" id="apiKeyStatus">Belum diisi</span>
+          </div>
+          <div class="api-input-group">
+            <input type="password" id="inputApiKey" class="api-key-input" placeholder="Masukkan SambaNova API Key..." autocomplete="off" />
+            <button type="button" id="btnToggleKeyVisibility" class="btn-key-visibility" title="Tampilkan / Sembunyikan Key">👁️</button>
+          </div>
+          <div class="api-config-hint">Key disimpan secara lokal di browser Anda. Pisahkan dengan koma jika menggunakan beberapa key untuk rotasi.</div>
+        </div>
+
+        <!-- NEW: Loop Mode Toggle -->
+        <div class="mode-option" id="toggle-loop" style="margin-top: 10px; border-color: var(--border);">
+            <div class="mode-info" style="flex: 1;">
+              <div class="mode-title">Loop Mode (Experimental)</div>
+              <div class="mode-sub">Auto Check & Auto Next Page</div>
+            </div>
+            <div class="loop-switch" id="loop-state-indicator" style="width: 10px; height: 10px; border-radius: 50%; background: #444;"></div>
+        </div>
+      <div class="ai-engine-badge" id="apiEngineInfo" style="margin-top: 8px;">
+        <span>✦</span>
+        <span id="engineLabel">Groq</span> &middot; <span class="engine-model" id="engineModel">Llama 3.3-70b → 8b → Gemini 2.0</span>
+      </div>
+    </div>
+
+    <!-- Extra Prompt -->
+    <div class="section">
+      <div class="section-label">Instruksi Tambahan <span
+          style="color:var(--text-muted);font-size:9px;text-transform:none;letter-spacing:0;font-weight:400">(opsional)</span></div>
+      <div class="prompt-wrapper">
+        <textarea class="prompt-textarea" id="extraPrompt"
+          placeholder="Contoh: Jawab dalam bahasa Indonesia, gunakan bahasa C++, dll..." maxlength="500"
+          rows="3"></textarea>
+        <span class="char-count" id="charCount">0/500</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Progress -->
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar">
+        <div class="progress-fill indeterminate" id="progressFill"></div>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div class="log-section" id="logSection">
+      <div class="section-label" style="padding: 0 0 6px">Log</div>
+      <div class="log-box" id="logBox"></div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button class="btn-main" id="btnStart" disabled>
+        <span id="btnIcon" class="btn-sparkle">✦</span>
+        <span id="btnText">Mulai Auto-Jawab</span>
+        <span class="btn-sparkle">✦</span>
+      </button>
+      <button class="btn-secondary" id="btnScan">
+        <span>⟳</span>
+        <span>Scan Ulang Soal</span>
+      </button>
+      <button class="btn-clear" id="btnClear">
+        <span>✕</span>
+        <span>Clear Cache &amp; Reset</span>
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <button class="footer-toggle" id="logToggle">✳ Tampilkan Log</button>
+      <div class="footer-deco">
+        <span>✦</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;">UGLab</span>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,86 @@
+{
+  ".cursor/mcp.json": {
+    "mtime": 1783455221.2996821,
+    "seen": 1791173024.8001988,
+    "ast_hash": "248f2002b4f078af61910d88240f0d72",
+    "semantic_hash": "248f2002b4f078af61910d88240f0d72"
+  },
+  "manifest.json": {
+    "mtime": 1783454684.8219113,
+    "seen": 1791173024.800213,
+    "ast_hash": "a6e660383545dd548b6a9a6b6f374c84",
+    "semantic_hash": "a6e660383545dd548b6a9a6b6f374c84"
+  },
+  "popup.js": {
+    "mtime": 1783454721.8712504,
+    "seen": 1791173024.800218,
+    "ast_hash": "3c804419b76e64281d155fbc15bf742c",
+    "semantic_hash": "3c804419b76e64281d155fbc15bf742c"
+  },
+  "src/ai-injector.js": {
+    "mtime": 1783455259.9873698,
+    "seen": 1791173024.800222,
+    "ast_hash": "eb99b76bb2ef4bfb1e77f16e00311714",
+    "semantic_hash": "eb99b76bb2ef4bfb1e77f16e00311714"
+  },
+  "src/background.js": {
+    "mtime": 1783454735.2653484,
+    "seen": 1791173024.800226,
+    "ast_hash": "f5c0f4e9e116616b0dd1856c760a34fd",
+    "semantic_hash": "f5c0f4e9e116616b0dd1856c760a34fd"
+  },
+  "src/lms-content.js": {
+    "mtime": 1783454254.6972644,
+    "seen": 1791173024.800229,
+    "ast_hash": "507bd018a88cb79ccc279f7a0feaf34b",
+    "semantic_hash": "507bd018a88cb79ccc279f7a0feaf34b"
+  },
+  "-p/SKILL.md": {
+    "mtime": 1777022744.0,
+    "seen": 1791173024.800233,
+    "ast_hash": "5c392562ec1cf5ffa6b9d2319375373f",
+    "semantic_hash": "5c392562ec1cf5ffa6b9d2319375373f"
+  },
+  "README.md": {
+    "mtime": 1776385636.0,
+    "seen": 1791173024.800236,
+    "ast_hash": "67a9578d3de1b7c425320e1272b4070a",
+    "semantic_hash": "67a9578d3de1b7c425320e1272b4070a"
+  },
+  "popup.html": {
+    "mtime": 1783454704.1169412,
+    "seen": 1791173024.800239,
+    "ast_hash": "f649d883911f8f0f02a61b7fb77212e4",
+    "semantic_hash": "f649d883911f8f0f02a61b7fb77212e4"
+  },
+  "icons/icon128.png": {
+    "mtime": 1777025302.0,
+    "seen": 1791173024.800242,
+    "ast_hash": "1c8479c7c0fe6b07540ba9614b7d5d8a",
+    "semantic_hash": "1c8479c7c0fe6b07540ba9614b7d5d8a"
+  },
+  "icons/icon16.png": {
+    "mtime": 1777025302.0,
+    "seen": 1791173024.800246,
+    "ast_hash": "a1c6cc543179224a101517515f13fc1d",
+    "semantic_hash": "a1c6cc543179224a101517515f13fc1d"
+  },
+  "icons/icon32.png": {
+    "mtime": 1777025302.0,
+    "seen": 1791173024.80025,
+    "ast_hash": "1325920d2d4f747a385486ebf02cef75",
+    "semantic_hash": "1325920d2d4f747a385486ebf02cef75"
+  },
+  "icons/icon48.png": {
+    "mtime": 1777025302.0,
+    "seen": 1791173024.800253,
+    "ast_hash": "a47e6fbd9581af8517b7241c77eaea8e",
+    "semantic_hash": "a47e6fbd9581af8517b7241c77eaea8e"
+  },
+  "icons/logo.png": {
+    "mtime": 1777025130.0,
+    "seen": 1791173024.800256,
+    "ast_hash": "3191d75e64401fffd1f1eff365098bd0",
+    "semantic_hash": "3191d75e64401fffd1f1eff365098bd0"
+  }
+}
