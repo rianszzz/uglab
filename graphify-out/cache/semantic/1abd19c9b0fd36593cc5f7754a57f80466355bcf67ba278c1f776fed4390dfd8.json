@@ -1,0 +1,1 @@
+{"nodes": [{"id": "skill_p_config", "label": "Project Skill Configuration", "file_type": "document", "source_file": "-p/SKILL.md", "source_location": "L1", "source_url": null, "captured_at": null, "author": null, "contributor": null, "rationale": "Development instructions and agent skill definitions for the project."}], "edges": [], "hyperedges": []}

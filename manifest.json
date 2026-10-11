@@ -37,7 +37,11 @@
     "https://gemini.google.com/*",
     "https://chatgpt.com/*",
     "https://claude.ai/*",
-    "*://172.18.18.34/*"
+    "*://172.18.18.34/*",
+    "https://colab.research.google.com/*",
+    "https://colab.google/*",
+    "https://jupyter.org/*",
+    "*://localhost/*"
   ],
   "content_scripts": [
     {
@@ -50,6 +54,18 @@
       ],
       "js": [
         "src/lms-content.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://colab.research.google.com/*",
+        "https://colab.google/*",
+        "https://jupyter.org/*",
+        "*://localhost/*"
+      ],
+      "js": [
+        "src/notebook-content.js"
       ],
       "run_at": "document_idle"
     },

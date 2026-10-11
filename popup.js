@@ -5,6 +5,10 @@ const LMS_PATTERNS = [
   "praktikum.gunadarma.ac.id",
   "v-class.gunadarma.ac.id",
   "elearning.gunadarma.ac.id",
+  "colab.research.google.com",
+  "colab.google",
+  "jupyter.org",
+  "localhost"
 ];
 
 let currentTabId = null;

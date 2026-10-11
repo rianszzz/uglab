@@ -653,6 +653,10 @@ function broadcastToLMS(data) {
       "https://praktikum.gunadarma.ac.id/*",
       "https://v-class.gunadarma.ac.id/*",
       "https://elearning.gunadarma.ac.id/*",
+      "https://colab.research.google.com/*",
+      "https://colab.google/*",
+      "https://jupyter.org/*",
+      "*://localhost/*",
     ],
   }).then(tabs => {
     tabs.forEach(tab =>

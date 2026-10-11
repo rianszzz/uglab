@@ -4,68 +4,22 @@
   "graph": {
     "hyperedges": [
       {
-        "id": "he_auto_jawab_pipeline",
-        "label": "Auto-Jawab Message Pipeline",
+        "id": "extension_runtime_lifecycle",
+        "label": "Chrome Extension Runtime Lifecycle",
         "nodes": [
-          "readme_popup_ui",
-          "readme_msg_prelab_start",
-          "readme_background_service_worker",
-          "readme_ai_tab_injector",
-          "readme_msg_ai_result",
-          "readme_msg_prelab_answers",
-          "readme_lms_content_script"
+          "src_background",
+          "src_lms_content",
+          "popup",
+          "src_ai_injector"
         ],
         "relation": "participate_in",
-        "confidence": "EXTRACTED",
-        "confidence_score": 1.0,
-        "source_file": "README.md"
-      },
-      {
-        "id": "he_question_types",
-        "label": "Supported Question Type Set",
-        "nodes": [
-          "readme_tipe_soal",
-          "readme_q_pilihan_ganda",
-          "readme_q_true_false",
-          "readme_q_multi_select",
-          "readme_q_isian_singkat",
-          "readme_q_essay",
-          "readme_q_coding",
-          "readme_q_multi_kotak"
-        ],
-        "relation": "form",
-        "confidence": "EXTRACTED",
-        "confidence_score": 1.0,
-        "source_file": "README.md"
-      },
-      {
-        "id": "he_web_engine_selection",
-        "label": "Web Mode Engine Selection",
-        "nodes": [
-          "popup_mode_web",
-          "popup_engine_gemini",
-          "popup_engine_chatgpt",
-          "popup_engine_claude"
-        ],
-        "relation": "form",
-        "confidence": "EXTRACTED",
-        "confidence_score": 1.0,
-        "source_file": "popup.html"
+        "confidence": "INFERRED",
+        "confidence_score": 0.95,
+        "source_file": "manifest.json"
       }
     ]
   },
   "nodes": [
-    {
-      "id": "src_lms_content_autoproceed",
-      "label": "autoProceed()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 0,
-      "file_type": "code",
-      "norm_label": "autoproceed()",
-      "source_file": "src/lms-content.js",
-      "source_location": "L1260"
-    },
     {
       "id": "src_lms_content_buildfinalcode",
       "label": "buildFinalCode()",
@@ -78,17 +32,6 @@
       "source_location": "L855"
     },
     {
-      "id": "src_lms_content_checkautoloop",
-      "label": "checkAutoLoop()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 0,
-      "file_type": "code",
-      "norm_label": "checkautoloop()",
-      "source_file": "src/lms-content.js",
-      "source_location": "L1295"
-    },
-    {
       "id": "src_lms_content_coding",
       "label": "coding()",
       "_callable": true,
@@ -98,17 +41,6 @@
       "norm_label": "coding()",
       "source_file": "src/lms-content.js",
       "source_location": "L89"
-    },
-    {
-      "id": "src_lms_content_createstatusbadge",
-      "label": "createStatusBadge()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 0,
-      "file_type": "code",
-      "norm_label": "createstatusbadge()",
-      "source_file": "src/lms-content.js",
-      "source_location": "L1082"
     },
     {
       "id": "src_lms_content_detectquestiontype",
@@ -342,17 +274,6 @@
       "source_location": "L119"
     },
     {
-      "id": "src_lms_content_navigatenext",
-      "label": "navigateNext()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 0,
-      "file_type": "code",
-      "norm_label": "navigatenext()",
-      "source_file": "src/lms-content.js",
-      "source_location": "L1224"
-    },
-    {
       "id": "src_lms_content_processmathcontent",
       "label": "processMathContent()",
       "_callable": true,
@@ -386,17 +307,6 @@
       "source_location": "L59"
     },
     {
-      "id": "src_lms_content_submitmoodlenav",
-      "label": "submitMoodleNav()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 0,
-      "file_type": "code",
-      "norm_label": "submitmoodlenav()",
-      "source_file": "src/lms-content.js",
-      "source_location": "L1202"
-    },
-    {
       "id": "src_lms_content_truefalse",
       "label": "truefalse()",
       "_callable": true,
@@ -408,28 +318,6 @@
       "source_location": "L48"
     },
     {
-      "id": "src_lms_content_ujianautoloopentry",
-      "label": "ujianAutoLoopEntry()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 0,
-      "file_type": "code",
-      "norm_label": "ujianautoloopentry()",
-      "source_file": "src/lms-content.js",
-      "source_location": "L1666"
-    },
-    {
-      "id": "src_lms_content_ujianautoproceed",
-      "label": "ujianAutoProceed()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 0,
-      "file_type": "code",
-      "norm_label": "ujianautoproceed()",
-      "source_file": "src/lms-content.js",
-      "source_location": "L1636"
-    },
-    {
       "id": "src_lms_content_ujianfillanswer",
       "label": "ujianFillAnswer()",
       "_callable": true,
@@ -439,28 +327,6 @@
       "norm_label": "ujianfillanswer()",
       "source_file": "src/lms-content.js",
       "source_location": "L1556"
-    },
-    {
-      "id": "src_lms_content_ujianfindnextbutton",
-      "label": "ujianFindNextButton()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 0,
-      "file_type": "code",
-      "norm_label": "ujianfindnextbutton()",
-      "source_file": "src/lms-content.js",
-      "source_location": "L1435"
-    },
-    {
-      "id": "src_lms_content_ujianfindsavebutton",
-      "label": "ujianFindSaveButton()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 0,
-      "file_type": "code",
-      "norm_label": "ujianfindsavebutton()",
-      "source_file": "src/lms-content.js",
-      "source_location": "L1452"
     },
     {
       "id": "src_lms_content_ujiangetcurrentquestionnumber",
@@ -496,11 +362,352 @@
       "source_location": "L1461"
     },
     {
+      "id": "src_background_broadcasttolms",
+      "label": "broadcastToLMS()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "file_type": "code",
+      "norm_label": "broadcasttolms()",
+      "source_file": "src/background.js",
+      "source_location": "L649"
+    },
+    {
+      "id": "src_background_buildprompt",
+      "label": "buildPrompt()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "file_type": "code",
+      "norm_label": "buildprompt()",
+      "source_file": "src/background.js",
+      "source_location": "L331"
+    },
+    {
+      "id": "src_background_callgroqapi",
+      "label": "callGroqAPI()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "file_type": "code",
+      "norm_label": "callgroqapi()",
+      "source_file": "src/background.js",
+      "source_location": "L253"
+    },
+    {
+      "id": "src_background_deliveranswerstolms",
+      "label": "deliverAnswersToLMS()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "file_type": "code",
+      "norm_label": "deliveranswerstolms()",
+      "source_file": "src/background.js",
+      "source_location": "L603"
+    },
+    {
+      "id": "src_background_getapikeys",
+      "label": "getApiKeys()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "file_type": "code",
+      "norm_label": "getapikeys()",
+      "source_file": "src/background.js",
+      "source_location": "L25"
+    },
+    {
+      "id": "src_background_handlegeminidone",
+      "label": "handleGeminiDone()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "file_type": "code",
+      "norm_label": "handlegeminidone()",
+      "source_file": "src/background.js",
+      "source_location": "L103"
+    },
+    {
+      "id": "src_background_handlegeminierror",
+      "label": "handleGeminiError()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "file_type": "code",
+      "norm_label": "handlegeminierror()",
+      "source_file": "src/background.js",
+      "source_location": "L122"
+    },
+    {
+      "id": "src_background_handlestart",
+      "label": "handleStart()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "file_type": "code",
+      "norm_label": "handlestart()",
+      "source_file": "src/background.js",
+      "source_location": "L132"
+    },
+    {
+      "id": "src_background_parseanswersfromtext",
+      "label": "parseAnswersFromText()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "file_type": "code",
+      "norm_label": "parseanswersfromtext()",
+      "source_file": "src/background.js",
+      "source_location": "L528"
+    },
+    {
+      "id": "src_background_startkeepalive",
+      "label": "startKeepAlive()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "file_type": "code",
+      "norm_label": "startkeepalive()",
+      "source_file": "src/background.js",
+      "source_location": "L39"
+    },
+    {
+      "id": "src_background_stopkeepalive",
+      "label": "stopKeepAlive()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "file_type": "code",
+      "norm_label": "stopkeepalive()",
+      "source_file": "src/background.js",
+      "source_location": "L43"
+    },
+    {
+      "id": "src_ai_injector_buildprompt",
+      "label": "buildPrompt()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "file_type": "code",
+      "norm_label": "buildprompt()",
+      "source_file": "src/ai-injector.js",
+      "source_location": "L11"
+    },
+    {
+      "id": "src_ai_injector_checkforpendingwork",
+      "label": "checkForPendingWork()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "file_type": "code",
+      "norm_label": "checkforpendingwork()",
+      "source_file": "src/ai-injector.js",
+      "source_location": "L657"
+    },
+    {
+      "id": "src_ai_injector_doworkwithrequestid",
+      "label": "doWorkWithRequestId()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "file_type": "code",
+      "norm_label": "doworkwithrequestid()",
+      "source_file": "src/ai-injector.js",
+      "source_location": "L675"
+    },
+    {
+      "id": "src_ai_injector_extractandrelayresponse",
+      "label": "extractAndRelayResponse()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "file_type": "code",
+      "norm_label": "extractandrelayresponse()",
+      "source_file": "src/ai-injector.js",
+      "source_location": "L486"
+    },
+    {
+      "id": "src_ai_injector_findbestresponseelement",
+      "label": "findBestResponseElement()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "file_type": "code",
+      "norm_label": "findbestresponseelement()",
+      "source_file": "src/ai-injector.js",
+      "source_location": "L377"
+    },
+    {
+      "id": "src_ai_injector_hidegeminioverlay",
+      "label": "hideGeminiOverlay()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "file_type": "code",
+      "norm_label": "hidegeminioverlay()",
+      "source_file": "src/ai-injector.js",
+      "source_location": "L739"
+    },
+    {
+      "id": "src_ai_injector_injecttowebengine",
+      "label": "injectToWebEngine()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "file_type": "code",
+      "norm_label": "injecttowebengine()",
+      "source_file": "src/ai-injector.js",
+      "source_location": "L217"
+    },
+    {
+      "id": "src_ai_injector_parseanswersfromtext",
+      "label": "parseAnswersFromText()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "file_type": "code",
+      "norm_label": "parseanswersfromtext()",
+      "source_file": "src/ai-injector.js",
+      "source_location": "L567"
+    },
+    {
+      "id": "src_ai_injector_showgeminioverlay",
+      "label": "showGeminiOverlay()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "file_type": "code",
+      "norm_label": "showgeminioverlay()",
+      "source_file": "src/ai-injector.js",
+      "source_location": "L715"
+    },
+    {
+      "id": "src_ai_injector_sleep",
+      "label": "sleep()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "file_type": "code",
+      "norm_label": "sleep()",
+      "source_file": "src/ai-injector.js",
+      "source_location": "L8"
+    },
+    {
+      "id": "src_ai_injector_waitandextractresponse",
+      "label": "waitAndExtractResponse()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "file_type": "code",
+      "norm_label": "waitandextractresponse()",
+      "source_file": "src/ai-injector.js",
+      "source_location": "L408"
+    },
+    {
+      "id": "src_lms_content_autoproceed",
+      "label": "autoProceed()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "file_type": "code",
+      "norm_label": "autoproceed()",
+      "source_file": "src/lms-content.js",
+      "source_location": "L1260"
+    },
+    {
+      "id": "src_lms_content_checkautoloop",
+      "label": "checkAutoLoop()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "file_type": "code",
+      "norm_label": "checkautoloop()",
+      "source_file": "src/lms-content.js",
+      "source_location": "L1295"
+    },
+    {
+      "id": "src_lms_content_createstatusbadge",
+      "label": "createStatusBadge()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "file_type": "code",
+      "norm_label": "createstatusbadge()",
+      "source_file": "src/lms-content.js",
+      "source_location": "L1082"
+    },
+    {
+      "id": "src_lms_content_navigatenext",
+      "label": "navigateNext()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "file_type": "code",
+      "norm_label": "navigatenext()",
+      "source_file": "src/lms-content.js",
+      "source_location": "L1224"
+    },
+    {
+      "id": "src_lms_content_submitmoodlenav",
+      "label": "submitMoodleNav()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "file_type": "code",
+      "norm_label": "submitmoodlenav()",
+      "source_file": "src/lms-content.js",
+      "source_location": "L1202"
+    },
+    {
+      "id": "src_lms_content_ujianautoloopentry",
+      "label": "ujianAutoLoopEntry()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "file_type": "code",
+      "norm_label": "ujianautoloopentry()",
+      "source_file": "src/lms-content.js",
+      "source_location": "L1666"
+    },
+    {
+      "id": "src_lms_content_ujianautoproceed",
+      "label": "ujianAutoProceed()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "file_type": "code",
+      "norm_label": "ujianautoproceed()",
+      "source_file": "src/lms-content.js",
+      "source_location": "L1636"
+    },
+    {
+      "id": "src_lms_content_ujianfindnextbutton",
+      "label": "ujianFindNextButton()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "file_type": "code",
+      "norm_label": "ujianfindnextbutton()",
+      "source_file": "src/lms-content.js",
+      "source_location": "L1435"
+    },
+    {
+      "id": "src_lms_content_ujianfindsavebutton",
+      "label": "ujianFindSaveButton()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "file_type": "code",
+      "norm_label": "ujianfindsavebutton()",
+      "source_file": "src/lms-content.js",
+      "source_location": "L1452"
+    },
+    {
       "id": "src_lms_content_updatestatus",
       "label": "updateStatus()",
       "_callable": true,
       "_origin": "ast",
-      "community": 0,
+      "community": 5,
       "file_type": "code",
       "norm_label": "updatestatus()",
       "source_file": "src/lms-content.js",
@@ -511,418 +718,154 @@
       "label": "clearCache()",
       "_callable": true,
       "_origin": "ast",
-      "community": 1,
+      "community": 6,
       "file_type": "code",
       "norm_label": "clearcache()",
       "source_file": "popup.js",
-      "source_location": "L188"
+      "source_location": "L238"
     },
     {
       "id": "popup_detectcurrenttab",
       "label": "detectCurrentTab()",
       "_callable": true,
       "_origin": "ast",
-      "community": 1,
+      "community": 6,
       "file_type": "code",
       "norm_label": "detectcurrenttab()",
       "source_file": "popup.js",
-      "source_location": "L130"
+      "source_location": "L180"
     },
     {
       "id": "popup_log",
       "label": "log()",
       "_callable": true,
       "_origin": "ast",
-      "community": 1,
+      "community": 6,
       "file_type": "code",
       "norm_label": "log()",
       "source_file": "popup.js",
-      "source_location": "L400"
-    },
-    {
-      "id": "popup_oncompleted",
-      "label": "onCompleted()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "file_type": "code",
-      "norm_label": "oncompleted()",
-      "source_file": "popup.js",
-      "source_location": "L354"
-    },
-    {
-      "id": "popup_resetstate",
-      "label": "resetState()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "file_type": "code",
-      "norm_label": "resetstate()",
-      "source_file": "popup.js",
-      "source_location": "L388"
+      "source_location": "L456"
     },
     {
       "id": "popup_scanquestions",
       "label": "scanQuestions()",
       "_callable": true,
       "_origin": "ast",
-      "community": 1,
+      "community": 6,
       "file_type": "code",
       "norm_label": "scanquestions()",
       "source_file": "popup.js",
-      "source_location": "L157"
-    },
-    {
-      "id": "popup_setbtnloading",
-      "label": "setBtnLoading()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "file_type": "code",
-      "norm_label": "setbtnloading()",
-      "source_file": "popup.js",
-      "source_location": "L370"
+      "source_location": "L207"
     },
     {
       "id": "popup_setstatus",
       "label": "setStatus()",
       "_callable": true,
       "_origin": "ast",
-      "community": 1,
+      "community": 6,
       "file_type": "code",
       "norm_label": "setstatus()",
       "source_file": "popup.js",
-      "source_location": "L365"
+      "source_location": "L421"
     },
     {
       "id": "popup_setuplisteners",
       "label": "setupListeners()",
       "_callable": true,
       "_origin": "ast",
-      "community": 1,
+      "community": 6,
       "file_type": "code",
       "norm_label": "setuplisteners()",
       "source_file": "popup.js",
       "source_location": "L41"
     },
     {
-      "id": "popup_showprogress",
-      "label": "showProgress()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "file_type": "code",
-      "norm_label": "showprogress()",
-      "source_file": "popup.js",
-      "source_location": "L384"
-    },
-    {
-      "id": "popup_startautoanswer",
-      "label": "startAutoAnswer()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "file_type": "code",
-      "norm_label": "startautoanswer()",
-      "source_file": "popup.js",
-      "source_location": "L249"
-    },
-    {
       "id": "popup_togglelog",
       "label": "toggleLog()",
       "_callable": true,
       "_origin": "ast",
-      "community": 1,
+      "community": 6,
       "file_type": "code",
       "norm_label": "togglelog()",
       "source_file": "popup.js",
-      "source_location": "L394"
+      "source_location": "L450"
     },
     {
       "id": "popup_updatestats",
       "label": "updateStats()",
       "_callable": true,
       "_origin": "ast",
-      "community": 1,
+      "community": 6,
       "file_type": "code",
       "norm_label": "updatestats()",
       "source_file": "popup.js",
-      "source_location": "L207"
+      "source_location": "L257"
+    },
+    {
+      "id": "popup_oncompleted",
+      "label": "onCompleted()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 7,
+      "file_type": "code",
+      "norm_label": "oncompleted()",
+      "source_file": "popup.js",
+      "source_location": "L410"
+    },
+    {
+      "id": "popup_resetstate",
+      "label": "resetState()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 7,
+      "file_type": "code",
+      "norm_label": "resetstate()",
+      "source_file": "popup.js",
+      "source_location": "L444"
+    },
+    {
+      "id": "popup_setbtnloading",
+      "label": "setBtnLoading()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 7,
+      "file_type": "code",
+      "norm_label": "setbtnloading()",
+      "source_file": "popup.js",
+      "source_location": "L426"
+    },
+    {
+      "id": "popup_showprogress",
+      "label": "showProgress()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 7,
+      "file_type": "code",
+      "norm_label": "showprogress()",
+      "source_file": "popup.js",
+      "source_location": "L440"
+    },
+    {
+      "id": "popup_startautoanswer",
+      "label": "startAutoAnswer()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 7,
+      "file_type": "code",
+      "norm_label": "startautoanswer()",
+      "source_file": "popup.js",
+      "source_location": "L299"
     },
     {
       "id": "popup_waitforcompletion",
       "label": "waitForCompletion()",
       "_callable": true,
       "_origin": "ast",
-      "community": 1,
+      "community": 7,
       "file_type": "code",
       "norm_label": "waitforcompletion()",
       "source_file": "popup.js",
-      "source_location": "L310"
-    },
-    {
-      "id": "src_background_broadcasttolms",
-      "label": "broadcastToLMS()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "file_type": "code",
-      "norm_label": "broadcasttolms()",
-      "source_file": "src/background.js",
-      "source_location": "L673"
-    },
-    {
-      "id": "src_background_buildprompt",
-      "label": "buildPrompt()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "file_type": "code",
-      "norm_label": "buildprompt()",
-      "source_file": "src/background.js",
-      "source_location": "L355"
-    },
-    {
-      "id": "src_background_callgeminiapi",
-      "label": "callGeminiAPI()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "file_type": "code",
-      "norm_label": "callgeminiapi()",
-      "source_file": "src/background.js",
-      "source_location": "L324"
-    },
-    {
-      "id": "src_background_callgroqapi",
-      "label": "callGroqAPI()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "file_type": "code",
-      "norm_label": "callgroqapi()",
-      "source_file": "src/background.js",
-      "source_location": "L255"
-    },
-    {
-      "id": "src_background_deliveranswerstolms",
-      "label": "deliverAnswersToLMS()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "file_type": "code",
-      "norm_label": "deliveranswerstolms()",
-      "source_file": "src/background.js",
-      "source_location": "L627"
-    },
-    {
-      "id": "src_background_getnextgroqkey",
-      "label": "getNextGroqKey()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "file_type": "code",
-      "norm_label": "getnextgroqkey()",
-      "source_file": "src/background.js",
-      "source_location": "L33"
-    },
-    {
-      "id": "src_background_handlegeminidone",
-      "label": "handleGeminiDone()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "file_type": "code",
-      "norm_label": "handlegeminidone()",
-      "source_file": "src/background.js",
-      "source_location": "L105"
-    },
-    {
-      "id": "src_background_handlegeminierror",
-      "label": "handleGeminiError()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "file_type": "code",
-      "norm_label": "handlegeminierror()",
-      "source_file": "src/background.js",
-      "source_location": "L124"
-    },
-    {
-      "id": "src_background_handlestart",
-      "label": "handleStart()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "file_type": "code",
-      "norm_label": "handlestart()",
-      "source_file": "src/background.js",
-      "source_location": "L134"
-    },
-    {
-      "id": "src_background_parseanswersfromtext",
-      "label": "parseAnswersFromText()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "file_type": "code",
-      "norm_label": "parseanswersfromtext()",
-      "source_file": "src/background.js",
-      "source_location": "L552"
-    },
-    {
-      "id": "src_background_startkeepalive",
-      "label": "startKeepAlive()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "file_type": "code",
-      "norm_label": "startkeepalive()",
-      "source_file": "src/background.js",
-      "source_location": "L41"
-    },
-    {
-      "id": "src_background_stopkeepalive",
-      "label": "stopKeepAlive()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "file_type": "code",
-      "norm_label": "stopkeepalive()",
-      "source_file": "src/background.js",
-      "source_location": "L45"
-    },
-    {
-      "id": "src_ai_injector_buildprompt",
-      "label": "buildPrompt()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "file_type": "code",
-      "norm_label": "buildprompt()",
-      "source_file": "src/ai-injector.js",
-      "source_location": "L26"
-    },
-    {
-      "id": "src_ai_injector_checkforpendingwork",
-      "label": "checkForPendingWork()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "file_type": "code",
-      "norm_label": "checkforpendingwork()",
-      "source_file": "src/ai-injector.js",
-      "source_location": "L672"
-    },
-    {
-      "id": "src_ai_injector_doworkwithrequestid",
-      "label": "doWorkWithRequestId()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "file_type": "code",
-      "norm_label": "doworkwithrequestid()",
-      "source_file": "src/ai-injector.js",
-      "source_location": "L690"
-    },
-    {
-      "id": "src_ai_injector_extractandrelayresponse",
-      "label": "extractAndRelayResponse()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "file_type": "code",
-      "norm_label": "extractandrelayresponse()",
-      "source_file": "src/ai-injector.js",
-      "source_location": "L501"
-    },
-    {
-      "id": "src_ai_injector_findbestresponseelement",
-      "label": "findBestResponseElement()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "file_type": "code",
-      "norm_label": "findbestresponseelement()",
-      "source_file": "src/ai-injector.js",
-      "source_location": "L392"
-    },
-    {
-      "id": "src_ai_injector_hidegeminioverlay",
-      "label": "hideGeminiOverlay()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "file_type": "code",
-      "norm_label": "hidegeminioverlay()",
-      "source_file": "src/ai-injector.js",
-      "source_location": "L760"
-    },
-    {
-      "id": "src_ai_injector_injecttowebengine",
-      "label": "injectToWebEngine()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "file_type": "code",
-      "norm_label": "injecttowebengine()",
-      "source_file": "src/ai-injector.js",
-      "source_location": "L232"
-    },
-    {
-      "id": "src_ai_injector_parseanswersfromtext",
-      "label": "parseAnswersFromText()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "file_type": "code",
-      "norm_label": "parseanswersfromtext()",
-      "source_file": "src/ai-injector.js",
-      "source_location": "L582"
-    },
-    {
-      "id": "src_ai_injector_showgeminioverlay",
-      "label": "showGeminiOverlay()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "file_type": "code",
-      "norm_label": "showgeminioverlay()",
-      "source_file": "src/ai-injector.js",
-      "source_location": "L736"
-    },
-    {
-      "id": "src_ai_injector_sleep",
-      "label": "sleep()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "file_type": "code",
-      "norm_label": "sleep()",
-      "source_file": "src/ai-injector.js",
-      "source_location": "L23"
-    },
-    {
-      "id": "src_ai_injector_waitandextractresponse",
-      "label": "waitAndExtractResponse()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "file_type": "code",
-      "norm_label": "waitandextractresponse()",
-      "source_file": "src/ai-injector.js",
-      "source_location": "L423"
-    },
-    {
-      "id": "src_ai_injector_waitfor",
-      "label": "waitFor()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "file_type": "code",
-      "norm_label": "waitfor()",
-      "source_file": "src/ai-injector.js",
-      "source_location": "L9"
+      "source_location": "L373"
     },
     {
       "id": "src_lms_content",
@@ -935,210 +878,10 @@
       "source_location": "L1"
     },
     {
-      "id": "popup",
-      "label": "popup.js",
-      "_origin": "ast",
-      "community": 1,
-      "file_type": "code",
-      "norm_label": "popup.js",
-      "source_file": "popup.js",
-      "source_location": "L1"
-    },
-    {
-      "id": "popup_btnclear",
-      "label": "btnClear",
-      "_origin": "ast",
-      "community": 1,
-      "file_type": "code",
-      "norm_label": "btnclear",
-      "source_file": "popup.js",
-      "source_location": "L29"
-    },
-    {
-      "id": "popup_btnicon",
-      "label": "btnIcon",
-      "_origin": "ast",
-      "community": 1,
-      "file_type": "code",
-      "norm_label": "btnicon",
-      "source_file": "popup.js",
-      "source_location": "L21"
-    },
-    {
-      "id": "popup_btnscan",
-      "label": "btnScan",
-      "_origin": "ast",
-      "community": 1,
-      "file_type": "code",
-      "norm_label": "btnscan",
-      "source_file": "popup.js",
-      "source_location": "L20"
-    },
-    {
-      "id": "popup_btnstart",
-      "label": "btnStart",
-      "_origin": "ast",
-      "community": 1,
-      "file_type": "code",
-      "norm_label": "btnstart",
-      "source_file": "popup.js",
-      "source_location": "L19"
-    },
-    {
-      "id": "popup_btntext",
-      "label": "btnText",
-      "_origin": "ast",
-      "community": 1,
-      "file_type": "code",
-      "norm_label": "btntext",
-      "source_file": "popup.js",
-      "source_location": "L22"
-    },
-    {
-      "id": "popup_charcount",
-      "label": "charCount",
-      "_origin": "ast",
-      "community": 1,
-      "file_type": "code",
-      "norm_label": "charcount",
-      "source_file": "popup.js",
-      "source_location": "L24"
-    },
-    {
-      "id": "popup_detectedquestions",
-      "label": "detectedQuestions",
-      "_origin": "ast",
-      "community": 1,
-      "file_type": "code",
-      "norm_label": "detectedquestions",
-      "source_file": "popup.js",
-      "source_location": "L11"
-    },
-    {
-      "id": "popup_extraprompt",
-      "label": "extraPrompt",
-      "_origin": "ast",
-      "community": 1,
-      "file_type": "code",
-      "norm_label": "extraprompt",
-      "source_file": "popup.js",
-      "source_location": "L23"
-    },
-    {
-      "id": "popup_lms_patterns",
-      "label": "LMS_PATTERNS",
-      "_origin": "ast",
-      "community": 1,
-      "file_type": "code",
-      "norm_label": "lms_patterns",
-      "source_file": "popup.js",
-      "source_location": "L3"
-    },
-    {
-      "id": "popup_logbox",
-      "label": "logBox",
-      "_origin": "ast",
-      "community": 1,
-      "file_type": "code",
-      "norm_label": "logbox",
-      "source_file": "popup.js",
-      "source_location": "L27"
-    },
-    {
-      "id": "popup_logsection",
-      "label": "logSection",
-      "_origin": "ast",
-      "community": 1,
-      "file_type": "code",
-      "norm_label": "logsection",
-      "source_file": "popup.js",
-      "source_location": "L26"
-    },
-    {
-      "id": "popup_logtoggle",
-      "label": "logToggle",
-      "_origin": "ast",
-      "community": 1,
-      "file_type": "code",
-      "norm_label": "logtoggle",
-      "source_file": "popup.js",
-      "source_location": "L28"
-    },
-    {
-      "id": "popup_notonlmsnotice",
-      "label": "notOnLmsNotice",
-      "_origin": "ast",
-      "community": 1,
-      "file_type": "code",
-      "norm_label": "notonlmsnotice",
-      "source_file": "popup.js",
-      "source_location": "L32"
-    },
-    {
-      "id": "popup_progresswrap",
-      "label": "progressWrap",
-      "_origin": "ast",
-      "community": 1,
-      "file_type": "code",
-      "norm_label": "progresswrap",
-      "source_file": "popup.js",
-      "source_location": "L25"
-    },
-    {
-      "id": "popup_qtypescontainer",
-      "label": "qTypesContainer",
-      "_origin": "ast",
-      "community": 1,
-      "file_type": "code",
-      "norm_label": "qtypescontainer",
-      "source_file": "popup.js",
-      "source_location": "L33"
-    },
-    {
-      "id": "popup_statssection",
-      "label": "statsSection",
-      "_origin": "ast",
-      "community": 1,
-      "file_type": "code",
-      "norm_label": "statssection",
-      "source_file": "popup.js",
-      "source_location": "L30"
-    },
-    {
-      "id": "popup_statusbar",
-      "label": "statusBar",
-      "_origin": "ast",
-      "community": 1,
-      "file_type": "code",
-      "norm_label": "statusbar",
-      "source_file": "popup.js",
-      "source_location": "L17"
-    },
-    {
-      "id": "popup_statustext",
-      "label": "statusText",
-      "_origin": "ast",
-      "community": 1,
-      "file_type": "code",
-      "norm_label": "statustext",
-      "source_file": "popup.js",
-      "source_location": "L18"
-    },
-    {
-      "id": "popup_typessection",
-      "label": "typesSection",
-      "_origin": "ast",
-      "community": 1,
-      "file_type": "code",
-      "norm_label": "typessection",
-      "source_file": "popup.js",
-      "source_location": "L31"
-    },
-    {
       "id": "manifest",
       "label": "manifest.json",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "file_type": "code",
       "norm_label": "manifest.json",
       "source_file": "manifest.json",
@@ -1148,7 +891,7 @@
       "id": "manifest_action",
       "label": "action",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "file_type": "code",
       "norm_label": "action",
       "source_file": "manifest.json",
@@ -1158,7 +901,7 @@
       "id": "manifest_action_default_icon",
       "label": "default_icon",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "file_type": "code",
       "norm_label": "default_icon",
       "source_file": "manifest.json",
@@ -1168,7 +911,7 @@
       "id": "manifest_action_default_popup",
       "label": "default_popup",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "file_type": "code",
       "norm_label": "default_popup",
       "source_file": "manifest.json",
@@ -1178,7 +921,7 @@
       "id": "manifest_background",
       "label": "background",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "file_type": "code",
       "norm_label": "background",
       "source_file": "manifest.json",
@@ -1188,7 +931,7 @@
       "id": "manifest_background_service_worker",
       "label": "service_worker",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "file_type": "code",
       "norm_label": "service_worker",
       "source_file": "manifest.json",
@@ -1198,7 +941,7 @@
       "id": "manifest_content_scripts",
       "label": "content_scripts",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "file_type": "code",
       "norm_label": "content_scripts",
       "source_file": "manifest.json",
@@ -1208,7 +951,7 @@
       "id": "manifest_default_icon_128",
       "label": "128",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "file_type": "code",
       "norm_label": "128",
       "source_file": "manifest.json",
@@ -1218,7 +961,7 @@
       "id": "manifest_default_icon_16",
       "label": "16",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "file_type": "code",
       "norm_label": "16",
       "source_file": "manifest.json",
@@ -1228,7 +971,7 @@
       "id": "manifest_default_icon_48",
       "label": "48",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "file_type": "code",
       "norm_label": "48",
       "source_file": "manifest.json",
@@ -1238,7 +981,7 @@
       "id": "manifest_description",
       "label": "description",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "file_type": "code",
       "norm_label": "description",
       "source_file": "manifest.json",
@@ -1248,7 +991,7 @@
       "id": "manifest_host_permissions",
       "label": "host_permissions",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "file_type": "code",
       "norm_label": "host_permissions",
       "source_file": "manifest.json",
@@ -1258,7 +1001,7 @@
       "id": "manifest_icons",
       "label": "icons",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "file_type": "code",
       "norm_label": "icons",
       "source_file": "manifest.json",
@@ -1268,7 +1011,7 @@
       "id": "manifest_icons_128",
       "label": "128",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "file_type": "code",
       "norm_label": "128",
       "source_file": "manifest.json",
@@ -1278,7 +1021,7 @@
       "id": "manifest_icons_16",
       "label": "16",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "file_type": "code",
       "norm_label": "16",
       "source_file": "manifest.json",
@@ -1288,7 +1031,7 @@
       "id": "manifest_icons_32",
       "label": "32",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "file_type": "code",
       "norm_label": "32",
       "source_file": "manifest.json",
@@ -1298,7 +1041,7 @@
       "id": "manifest_icons_48",
       "label": "48",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "file_type": "code",
       "norm_label": "48",
       "source_file": "manifest.json",
@@ -1308,7 +1051,7 @@
       "id": "manifest_manifest_version",
       "label": "manifest_version",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "file_type": "code",
       "norm_label": "manifest_version",
       "source_file": "manifest.json",
@@ -1318,7 +1061,7 @@
       "id": "manifest_name",
       "label": "name",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "file_type": "code",
       "norm_label": "name",
       "source_file": "manifest.json",
@@ -1328,7 +1071,7 @@
       "id": "manifest_permissions",
       "label": "permissions",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "file_type": "code",
       "norm_label": "permissions",
       "source_file": "manifest.json",
@@ -1338,57 +1081,247 @@
       "id": "manifest_version",
       "label": "version",
       "_origin": "ast",
-      "community": 2,
+      "community": 1,
       "file_type": "code",
       "norm_label": "version",
       "source_file": "manifest.json",
       "source_location": "L4"
     },
     {
+      "id": "popup",
+      "label": "popup.js",
+      "_origin": "ast",
+      "community": 2,
+      "file_type": "code",
+      "norm_label": "popup.js",
+      "source_file": "popup.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "popup_btnclear",
+      "label": "btnClear",
+      "_origin": "ast",
+      "community": 2,
+      "file_type": "code",
+      "norm_label": "btnclear",
+      "source_file": "popup.js",
+      "source_location": "L29"
+    },
+    {
+      "id": "popup_btnicon",
+      "label": "btnIcon",
+      "_origin": "ast",
+      "community": 2,
+      "file_type": "code",
+      "norm_label": "btnicon",
+      "source_file": "popup.js",
+      "source_location": "L21"
+    },
+    {
+      "id": "popup_btnscan",
+      "label": "btnScan",
+      "_origin": "ast",
+      "community": 2,
+      "file_type": "code",
+      "norm_label": "btnscan",
+      "source_file": "popup.js",
+      "source_location": "L20"
+    },
+    {
+      "id": "popup_btnstart",
+      "label": "btnStart",
+      "_origin": "ast",
+      "community": 2,
+      "file_type": "code",
+      "norm_label": "btnstart",
+      "source_file": "popup.js",
+      "source_location": "L19"
+    },
+    {
+      "id": "popup_btntext",
+      "label": "btnText",
+      "_origin": "ast",
+      "community": 2,
+      "file_type": "code",
+      "norm_label": "btntext",
+      "source_file": "popup.js",
+      "source_location": "L22"
+    },
+    {
+      "id": "popup_charcount",
+      "label": "charCount",
+      "_origin": "ast",
+      "community": 2,
+      "file_type": "code",
+      "norm_label": "charcount",
+      "source_file": "popup.js",
+      "source_location": "L24"
+    },
+    {
+      "id": "popup_detectedquestions",
+      "label": "detectedQuestions",
+      "_origin": "ast",
+      "community": 2,
+      "file_type": "code",
+      "norm_label": "detectedquestions",
+      "source_file": "popup.js",
+      "source_location": "L11"
+    },
+    {
+      "id": "popup_extraprompt",
+      "label": "extraPrompt",
+      "_origin": "ast",
+      "community": 2,
+      "file_type": "code",
+      "norm_label": "extraprompt",
+      "source_file": "popup.js",
+      "source_location": "L23"
+    },
+    {
+      "id": "popup_lms_patterns",
+      "label": "LMS_PATTERNS",
+      "_origin": "ast",
+      "community": 2,
+      "file_type": "code",
+      "norm_label": "lms_patterns",
+      "source_file": "popup.js",
+      "source_location": "L3"
+    },
+    {
+      "id": "popup_logbox",
+      "label": "logBox",
+      "_origin": "ast",
+      "community": 2,
+      "file_type": "code",
+      "norm_label": "logbox",
+      "source_file": "popup.js",
+      "source_location": "L27"
+    },
+    {
+      "id": "popup_logsection",
+      "label": "logSection",
+      "_origin": "ast",
+      "community": 2,
+      "file_type": "code",
+      "norm_label": "logsection",
+      "source_file": "popup.js",
+      "source_location": "L26"
+    },
+    {
+      "id": "popup_logtoggle",
+      "label": "logToggle",
+      "_origin": "ast",
+      "community": 2,
+      "file_type": "code",
+      "norm_label": "logtoggle",
+      "source_file": "popup.js",
+      "source_location": "L28"
+    },
+    {
+      "id": "popup_notonlmsnotice",
+      "label": "notOnLmsNotice",
+      "_origin": "ast",
+      "community": 2,
+      "file_type": "code",
+      "norm_label": "notonlmsnotice",
+      "source_file": "popup.js",
+      "source_location": "L32"
+    },
+    {
+      "id": "popup_progresswrap",
+      "label": "progressWrap",
+      "_origin": "ast",
+      "community": 2,
+      "file_type": "code",
+      "norm_label": "progresswrap",
+      "source_file": "popup.js",
+      "source_location": "L25"
+    },
+    {
+      "id": "popup_qtypescontainer",
+      "label": "qTypesContainer",
+      "_origin": "ast",
+      "community": 2,
+      "file_type": "code",
+      "norm_label": "qtypescontainer",
+      "source_file": "popup.js",
+      "source_location": "L33"
+    },
+    {
+      "id": "popup_statssection",
+      "label": "statsSection",
+      "_origin": "ast",
+      "community": 2,
+      "file_type": "code",
+      "norm_label": "statssection",
+      "source_file": "popup.js",
+      "source_location": "L30"
+    },
+    {
+      "id": "popup_statusbar",
+      "label": "statusBar",
+      "_origin": "ast",
+      "community": 2,
+      "file_type": "code",
+      "norm_label": "statusbar",
+      "source_file": "popup.js",
+      "source_location": "L17"
+    },
+    {
+      "id": "popup_statustext",
+      "label": "statusText",
+      "_origin": "ast",
+      "community": 2,
+      "file_type": "code",
+      "norm_label": "statustext",
+      "source_file": "popup.js",
+      "source_location": "L18"
+    },
+    {
+      "id": "popup_typessection",
+      "label": "typesSection",
+      "_origin": "ast",
+      "community": 2,
+      "file_type": "code",
+      "norm_label": "typessection",
+      "source_file": "popup.js",
+      "source_location": "L31"
+    },
+    {
       "id": "src_background",
       "label": "background.js",
       "_origin": "ast",
-      "community": 4,
+      "community": 3,
       "file_type": "code",
       "norm_label": "background.js",
       "source_file": "src/background.js",
       "source_location": "L1"
     },
     {
-      "id": "src_background_groq_api_keys",
-      "label": "GROQ_API_KEYS",
-      "_origin": "ast",
-      "community": 4,
-      "file_type": "code",
-      "norm_label": "groq_api_keys",
-      "source_file": "src/background.js",
-      "source_location": "L11"
-    },
-    {
       "id": "src_background_text_model_chain",
       "label": "TEXT_MODEL_CHAIN",
       "_origin": "ast",
-      "community": 4,
+      "community": 3,
       "file_type": "code",
       "norm_label": "text_model_chain",
       "source_file": "src/background.js",
-      "source_location": "L17"
+      "source_location": "L13"
     },
     {
       "id": "src_background_vision_model_chain",
       "label": "VISION_MODEL_CHAIN",
       "_origin": "ast",
-      "community": 4,
+      "community": 3,
       "file_type": "code",
       "norm_label": "vision_model_chain",
       "source_file": "src/background.js",
-      "source_location": "L23"
+      "source_location": "L19"
     },
     {
       "id": "src_ai_injector",
       "label": "ai-injector.js",
       "_origin": "ast",
-      "community": 6,
+      "community": 4,
       "file_type": "code",
       "norm_label": "ai-injector.js",
       "source_file": "src/ai-injector.js",
@@ -1398,7 +1331,7 @@
       "id": "cursor_mcp",
       "label": "mcp.json",
       "_origin": "ast",
-      "community": 7,
+      "community": 9,
       "file_type": "code",
       "metadata": {
         "mcp_kind": "mcp_config_file"
@@ -1411,7 +1344,7 @@
       "id": "cursor_mcp_mcp_server_shadcn",
       "label": "shadcn",
       "_origin": "ast",
-      "community": 7,
+      "community": 9,
       "file_type": "code",
       "metadata": {
         "mcp_kind": "mcp_server"
@@ -1424,7 +1357,7 @@
       "id": "mcp_command_npx",
       "label": "npx",
       "_origin": "ast",
-      "community": 7,
+      "community": 9,
       "file_type": "code",
       "metadata": {
         "mcp_kind": "mcp_command"
@@ -1434,527 +1367,114 @@
       "source_location": "L1"
     },
     {
-      "id": "icons_icon16",
-      "label": "Icon16",
+      "id": "icons_extension_icons",
+      "label": "Chrome Extension Action Icons",
+      "author": null,
+      "captured_at": null,
+      "community": 1,
+      "contributor": null,
+      "file_type": "image",
+      "norm_label": "chrome extension action icons",
+      "rationale": "Manifest action icons for toolbar and extensions manager (16px, 32px, 48px, 128px).",
+      "source_file": "icons/icon128.png",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "id": "popup_html_ui",
+      "label": "Popup UI Layout",
+      "author": null,
+      "captured_at": null,
+      "community": 10,
+      "contributor": null,
+      "file_type": "document",
+      "norm_label": "popup ui layout",
+      "rationale": "Provides the user interface for configuration, enabling/disabling auto-fill, selecting AI models, and inputting API keys.",
+      "source_file": "popup.html",
+      "source_location": "L1",
+      "source_url": null
+    },
+    {
+      "id": "icons_logo_png",
+      "label": "UG Lab Brand Logo",
       "author": null,
       "captured_at": null,
       "community": 10,
       "contributor": null,
       "file_type": "image",
-      "norm_label": "icon16",
-      "source_file": "icons/icon16.png",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "icons_icon32_app_icon",
-      "label": "App Icon (32x32)",
-      "author": null,
-      "captured_at": null,
-      "community": 11,
-      "contributor": null,
-      "file_type": "image",
-      "norm_label": "app icon (32x32)",
-      "source_file": "icons/icon32.png",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "icons_logo_logo",
-      "label": "Logo",
-      "author": null,
-      "captured_at": null,
-      "community": 12,
-      "contributor": null,
-      "file_type": "image",
-      "norm_label": "logo",
+      "norm_label": "ug lab brand logo",
+      "rationale": "Primary branding asset displayed in popup header and documentation.",
       "source_file": "icons/logo.png",
       "source_location": null,
       "source_url": null
     },
     {
-      "id": "popup_popup_ui",
-      "label": "Popup UI (popup.html)",
+      "id": "skill_p_config",
+      "label": "Project Skill Configuration",
       "author": null,
       "captured_at": null,
-      "community": 3,
+      "community": 11,
       "contributor": null,
-      "file_type": "code",
-      "norm_label": "popup ui (popup.html)",
-      "source_file": "popup.html",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "popup_engine_chatgpt",
-      "label": "Web Engine: ChatGPT",
-      "author": null,
-      "captured_at": null,
-      "community": 3,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "web engine: chatgpt",
-      "source_file": "popup.html",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "popup_engine_claude",
-      "label": "Web Engine: Claude",
-      "author": null,
-      "captured_at": null,
-      "community": 3,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "web engine: claude",
-      "source_file": "popup.html",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "popup_engine_gemini",
-      "label": "Web Engine: Gemini",
-      "author": null,
-      "captured_at": null,
-      "community": 3,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "web engine: gemini",
-      "source_file": "popup.html",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "popup_extra_prompt",
-      "label": "Extra Prompt Textarea (Instruksi Tambahan)",
-      "author": null,
-      "captured_at": null,
-      "community": 3,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "extra prompt textarea (instruksi tambahan)",
-      "source_file": "popup.html",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "popup_loop_mode",
-      "label": "Loop Mode (Experimental: Auto Check & Auto Next Page)",
-      "author": null,
-      "captured_at": null,
-      "community": 3,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "loop mode (experimental: auto check & auto next page)",
-      "source_file": "popup.html",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "popup_mode_api",
-      "label": "API Mode (Groq/Gemini API)",
-      "author": null,
-      "captured_at": null,
-      "community": 3,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "api mode (groq/gemini api)",
-      "source_file": "popup.html",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "popup_mode_web",
-      "label": "Web Mode (Visual Gemini/ChatGPT)",
-      "author": null,
-      "captured_at": null,
-      "community": 3,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "web mode (visual gemini/chatgpt)",
-      "source_file": "popup.html",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "readme_auto_jawab",
-      "label": "Auto-Jawab Praktikum",
-      "author": null,
-      "captured_at": null,
-      "community": 3,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "auto-jawab praktikum",
-      "source_file": "README.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "readme_chatgpt",
-      "label": "ChatGPT AI",
-      "author": null,
-      "captured_at": null,
-      "community": 3,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "chatgpt ai",
-      "source_file": "README.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "readme_gemini",
-      "label": "Gemini AI",
-      "author": null,
-      "captured_at": null,
-      "community": 3,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "gemini ai",
-      "source_file": "README.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "readme_ilab",
-      "label": "iLab (Gunadarma LMS, Moodle-based)",
-      "author": null,
-      "captured_at": null,
-      "community": 3,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "ilab (gunadarma lms, moodle-based)",
-      "source_file": "README.md",
-      "source_location": null,
+      "file_type": "document",
+      "norm_label": "project skill configuration",
+      "rationale": "Development instructions and agent skill definitions for the project.",
+      "source_file": "-p/SKILL.md",
+      "source_location": "L1",
       "source_url": null
     },
     {
       "id": "readme_uglab",
-      "label": "UGLab",
+      "label": "UG Lab Extension Overview",
       "author": null,
       "captured_at": null,
-      "community": 3,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "uglab",
-      "rationale": "For educational and practice purposes only; users are told to verify answers before submitting and use responsibly.",
-      "source_file": "README.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "readme_vclass",
-      "label": "v-class (Gunadarma LMS)",
-      "author": null,
-      "captured_at": null,
-      "community": 3,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "v-class (gunadarma lms)",
-      "source_file": "README.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "_p_skill_frontend_design",
-      "label": "Frontend Design Skill",
-      "author": null,
-      "captured_at": null,
-      "community": 3,
+      "community": 8,
       "contributor": null,
       "file_type": "document",
-      "norm_label": "frontend design skill",
-      "source_file": "-p/SKILL.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "_p_skill_avoid_ai_slop",
-      "label": "Avoiding Generic AI Aesthetics (AI slop)",
-      "author": null,
-      "captured_at": null,
-      "community": 3,
-      "contributor": null,
-      "file_type": "rationale",
-      "norm_label": "avoiding generic ai aesthetics (ai slop)",
-      "rationale": "Overused fonts (Inter, Roboto, Arial, system fonts), purple-gradient cliches, and cookie-cutter layouts signal un-designed output.",
-      "source_file": "-p/SKILL.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "_p_skill_design_thinking",
-      "label": "Design Thinking (bold aesthetic direction)",
-      "author": null,
-      "captured_at": null,
-      "community": 3,
-      "contributor": null,
-      "file_type": "rationale",
-      "norm_label": "design thinking (bold aesthetic direction)",
-      "rationale": "Committing to a clear conceptual direction executed with precision matters more than intensity; intentionality over generic output.",
-      "source_file": "-p/SKILL.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "_p_skill_frontend_aesthetics",
-      "label": "Frontend Aesthetics Guidelines (typography, color, motion, spatial composition)",
-      "author": null,
-      "captured_at": null,
-      "community": 3,
-      "contributor": null,
-      "file_type": "rationale",
-      "norm_label": "frontend aesthetics guidelines (typography, color, motion, spatial composition)",
-      "rationale": "Dominant colors with sharp accents outperform timid evenly-distributed palettes; distinctive fonts and CSS-first motion avoid generic AI aesthetics.",
-      "source_file": "-p/SKILL.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "_p_skill_space_grotesk",
-      "label": "Space Grotesk (flagged as overused convergence choice)",
-      "author": null,
-      "captured_at": null,
-      "community": 3,
-      "contributor": null,
-      "file_type": "rationale",
-      "norm_label": "space grotesk (flagged as overused convergence choice)",
-      "rationale": "NEVER converge on common choices like Space Grotesk across generations.",
-      "source_file": "-p/SKILL.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "readme_ai_tab_injector",
-      "label": "AI Tab Injector",
-      "author": null,
-      "captured_at": null,
-      "community": 5,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "ai tab injector",
+      "norm_label": "ug lab extension overview",
+      "rationale": "UG Lab is a Chrome extension designed to streamline assignments and quizzes on Gunadarma University's LMS (i-Lab/v-class) using AI assistance.",
       "source_file": "README.md",
-      "source_location": null,
+      "source_location": "L1",
       "source_url": null
     },
     {
-      "id": "readme_background_service_worker",
-      "label": "Background Service Worker",
-      "author": null,
-      "captured_at": null,
-      "community": 5,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "background service worker",
-      "source_file": "README.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "readme_lms_content_script",
-      "label": "LMS Content Script",
-      "author": null,
-      "captured_at": null,
-      "community": 5,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "lms content script",
-      "source_file": "README.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "readme_msg_ai_result",
-      "label": "AI_RESULT message",
-      "author": null,
-      "captured_at": null,
-      "community": 5,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "ai_result message",
-      "source_file": "README.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "readme_msg_prelab_answers",
-      "label": "PRELAB_ANSWERS message",
-      "author": null,
-      "captured_at": null,
-      "community": 5,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "prelab_answers message",
-      "source_file": "README.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "readme_msg_prelab_start",
-      "label": "PRELAB_START message",
-      "author": null,
-      "captured_at": null,
-      "community": 5,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "prelab_start message",
-      "source_file": "README.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "readme_popup_ui",
-      "label": "Popup UI",
-      "author": null,
-      "captured_at": null,
-      "community": 5,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "popup ui",
-      "source_file": "README.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "readme_q_coding",
-      "label": "Coding (CodeMirror & Ace Editor)",
-      "author": null,
-      "captured_at": null,
-      "community": 5,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "coding (codemirror & ace editor)",
-      "source_file": "README.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "readme_q_essay",
-      "label": "Essay (Textarea / Atto Moodle Editor)",
-      "author": null,
-      "captured_at": null,
-      "community": 5,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "essay (textarea / atto moodle editor)",
-      "source_file": "README.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "readme_q_isian_singkat",
-      "label": "Isian Singkat (Text Input)",
-      "author": null,
-      "captured_at": null,
-      "community": 5,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "isian singkat (text input)",
-      "source_file": "README.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "readme_q_multi_kotak",
-      "label": "Multi-Kotak (Multiple Text Inputs)",
-      "author": null,
-      "captured_at": null,
-      "community": 5,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "multi-kotak (multiple text inputs)",
-      "source_file": "README.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "readme_q_multi_select",
-      "label": "Multi-Select (Checkbox)",
-      "author": null,
-      "captured_at": null,
-      "community": 5,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "multi-select (checkbox)",
-      "source_file": "README.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "readme_q_pilihan_ganda",
-      "label": "Pilihan Ganda (Radio Button)",
-      "author": null,
-      "captured_at": null,
-      "community": 5,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "pilihan ganda (radio button)",
-      "source_file": "README.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "readme_q_true_false",
-      "label": "True/False",
-      "author": null,
-      "captured_at": null,
-      "community": 5,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "true/false",
-      "source_file": "README.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "readme_tipe_soal",
-      "label": "Supported Question Types",
-      "author": null,
-      "captured_at": null,
-      "community": 5,
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "supported question types",
-      "source_file": "README.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "icons_icon48_extension_icon_concept",
-      "label": "Extension Icon Concept",
+      "id": "uglab_ai_orchestration",
+      "label": "AI Provider Query & Injection Flow",
       "author": null,
       "captured_at": null,
       "community": 8,
       "contributor": null,
-      "file_type": "concept",
-      "norm_label": "extension icon concept",
-      "source_file": "icons/icon48.png",
+      "file_type": "rationale",
+      "norm_label": "ai provider query & injection flow",
+      "rationale": "Formats scraped quiz questions into structured prompts, communicates with AI backends or proxies, and executes auto-answering.",
+      "source_file": "src/ai-injector.js",
       "source_location": null,
       "source_url": null
     },
     {
-      "id": "icons_icon48_app_icon",
-      "label": "App Icon (48px)",
+      "id": "uglab_lms_integration_pattern",
+      "label": "LMS Content Script & DOM Mutation Pipeline",
       "author": null,
       "captured_at": null,
       "community": 8,
       "contributor": null,
-      "file_type": "image",
-      "norm_label": "app icon (48px)",
-      "source_file": "icons/icon48.png",
+      "file_type": "rationale",
+      "norm_label": "lms content script & dom mutation pipeline",
+      "rationale": "Observer pattern listening for Gunadarma i-Lab dynamic question elements and injecting solve buttons.",
+      "source_file": "src/lms-content.js",
       "source_location": null,
       "source_url": null
     },
     {
-      "id": "icons_icon128_app_icon",
-      "label": "App Icon 128x128",
+      "id": "uglab_message_bus",
+      "label": "Chrome Extension Messaging Bus",
       "author": null,
       "captured_at": null,
-      "community": 9,
+      "community": 8,
       "contributor": null,
-      "file_type": "image",
-      "norm_label": "app icon 128x128",
-      "source_file": "icons/icon128.png",
+      "file_type": "rationale",
+      "norm_label": "chrome extension messaging bus",
+      "rationale": "Service worker mediating communications between popup UI, content scripts, and storage.",
+      "source_file": "src/background.js",
       "source_location": null,
       "source_url": null
     }
@@ -1969,7 +1489,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L198",
+      "source_location": "L248",
       "weight": 1.0
     },
     {
@@ -1981,7 +1501,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L199",
+      "source_location": "L249",
       "weight": 1.0
     },
     {
@@ -1993,7 +1513,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L200",
+      "source_location": "L250",
       "weight": 1.0
     },
     {
@@ -2005,7 +1525,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L201",
+      "source_location": "L251",
       "weight": 1.0
     },
     {
@@ -2017,7 +1537,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L202",
+      "source_location": "L252",
       "weight": 1.0
     },
     {
@@ -2029,7 +1549,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L131",
+      "source_location": "L181",
       "weight": 1.0
     },
     {
@@ -2041,7 +1561,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L149",
+      "source_location": "L199",
       "weight": 1.0
     },
     {
@@ -2053,7 +1573,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L152",
+      "source_location": "L202",
       "weight": 1.0
     },
     {
@@ -2065,7 +1585,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L355",
+      "source_location": "L411",
       "weight": 1.0
     },
     {
@@ -2077,7 +1597,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L356",
+      "source_location": "L412",
       "weight": 1.0
     },
     {
@@ -2089,7 +1609,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L359",
+      "source_location": "L415",
       "weight": 1.0
     },
     {
@@ -2101,7 +1621,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L360",
+      "source_location": "L416",
       "weight": 1.0
     },
     {
@@ -2113,7 +1633,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L390",
+      "source_location": "L446",
       "weight": 1.0
     },
     {
@@ -2125,7 +1645,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L391",
+      "source_location": "L447",
       "weight": 1.0
     },
     {
@@ -2137,7 +1657,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L159",
+      "source_location": "L209",
       "weight": 1.0
     },
     {
@@ -2149,7 +1669,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L167",
+      "source_location": "L217",
       "weight": 1.0
     },
     {
@@ -2161,7 +1681,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L170",
+      "source_location": "L220",
       "weight": 1.0
     },
     {
@@ -2173,7 +1693,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L78",
+      "source_location": "L124",
       "weight": 1.0
     },
     {
@@ -2185,7 +1705,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L87",
+      "source_location": "L133",
       "weight": 1.0
     },
     {
@@ -2197,7 +1717,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L253",
+      "source_location": "L303",
       "weight": 1.0
     },
     {
@@ -2209,7 +1729,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L267",
+      "source_location": "L317",
       "weight": 1.0
     },
     {
@@ -2221,7 +1741,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L268",
+      "source_location": "L318",
       "weight": 1.0
     },
     {
@@ -2233,7 +1753,19 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L269",
+      "source_location": "L319",
+      "weight": 1.0
+    },
+    {
+      "source": "popup_startautoanswer",
+      "target": "popup_resetstate",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "popup.js",
+      "source_location": "L336",
       "weight": 1.0
     },
     {
@@ -2245,19 +1777,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L298",
-      "weight": 1.0
-    },
-    {
-      "source": "popup_startautoanswer",
-      "target": "popup_resetstate",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "popup.js",
-      "source_location": "L305",
+      "source_location": "L361",
       "weight": 1.0
     },
     {
@@ -2269,7 +1789,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L324",
+      "source_location": "L380",
       "weight": 1.0
     },
     {
@@ -2281,7 +1801,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L325",
+      "source_location": "L381",
       "weight": 1.0
     },
     {
@@ -2293,7 +1813,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L326",
+      "source_location": "L382",
       "weight": 1.0
     },
     {
@@ -2305,7 +1825,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L334",
+      "source_location": "L390",
       "weight": 1.0
     },
     {
@@ -2317,7 +1837,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ai-injector.js",
-      "source_location": "L679",
+      "source_location": "L664",
       "weight": 1.0
     },
     {
@@ -2329,7 +1849,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ai-injector.js",
-      "source_location": "L680",
+      "source_location": "L665",
       "weight": 1.0
     },
     {
@@ -2341,7 +1861,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ai-injector.js",
-      "source_location": "L682",
+      "source_location": "L667",
       "weight": 1.0
     },
     {
@@ -2353,7 +1873,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ai-injector.js",
-      "source_location": "L705",
+      "source_location": "L690",
       "weight": 1.0
     },
     {
@@ -2365,7 +1885,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ai-injector.js",
-      "source_location": "L706",
+      "source_location": "L691",
       "weight": 1.0
     },
     {
@@ -2377,7 +1897,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ai-injector.js",
-      "source_location": "L711",
+      "source_location": "L696",
       "weight": 1.0
     },
     {
@@ -2389,7 +1909,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ai-injector.js",
-      "source_location": "L548",
+      "source_location": "L533",
       "weight": 1.0
     },
     {
@@ -2401,7 +1921,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ai-injector.js",
-      "source_location": "L552",
+      "source_location": "L537",
       "weight": 1.0
     },
     {
@@ -2413,7 +1933,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ai-injector.js",
-      "source_location": "L578",
+      "source_location": "L563",
       "weight": 1.0
     },
     {
@@ -2425,7 +1945,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ai-injector.js",
-      "source_location": "L270",
+      "source_location": "L255",
       "weight": 1.0
     },
     {
@@ -2437,7 +1957,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ai-injector.js",
-      "source_location": "L283",
+      "source_location": "L268",
       "weight": 1.0
     },
     {
@@ -2449,7 +1969,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ai-injector.js",
-      "source_location": "L378",
+      "source_location": "L363",
       "weight": 1.0
     },
     {
@@ -2461,7 +1981,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ai-injector.js",
-      "source_location": "L444",
+      "source_location": "L429",
       "weight": 1.0
     },
     {
@@ -2473,7 +1993,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ai-injector.js",
-      "source_location": "L455",
+      "source_location": "L440",
       "weight": 1.0
     },
     {
@@ -2485,7 +2005,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ai-injector.js",
-      "source_location": "L465",
+      "source_location": "L450",
       "weight": 1.0
     },
     {
@@ -2497,19 +2017,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ai-injector.js",
-      "source_location": "L497",
-      "weight": 1.0
-    },
-    {
-      "source": "src_background_callgeminiapi",
-      "target": "src_background_buildprompt",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "src/background.js",
-      "source_location": "L325",
+      "source_location": "L482",
       "weight": 1.0
     },
     {
@@ -2521,24 +2029,36 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/background.js",
-      "source_location": "L257",
+      "source_location": "L255",
       "weight": 1.0
     },
     {
       "source": "src_background_callgroqapi",
-      "target": "src_background_getnextgroqkey",
+      "target": "src_background_getapikeys",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/background.js",
-      "source_location": "L285",
+      "source_location": "L281",
       "weight": 1.0
     },
     {
       "source": "src_background_handlegeminidone",
       "target": "src_background_parseanswersfromtext",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/background.js",
+      "source_location": "L111",
+      "weight": 1.0
+    },
+    {
+      "source": "src_background_handlegeminidone",
+      "target": "src_background_deliveranswerstolms",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -2550,18 +2070,6 @@
     },
     {
       "source": "src_background_handlegeminidone",
-      "target": "src_background_deliveranswerstolms",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "src/background.js",
-      "source_location": "L115",
-      "weight": 1.0
-    },
-    {
-      "source": "src_background_handlegeminidone",
       "target": "src_background_broadcasttolms",
       "relation": "calls",
       "_origin": "ast",
@@ -2569,7 +2077,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/background.js",
-      "source_location": "L116",
+      "source_location": "L114",
       "weight": 1.0
     },
     {
@@ -2581,7 +2089,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/background.js",
-      "source_location": "L149",
+      "source_location": "L147",
       "weight": 1.0
     },
     {
@@ -2593,7 +2101,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/background.js",
-      "source_location": "L167",
+      "source_location": "L165",
       "weight": 1.0
     },
     {
@@ -2605,7 +2113,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/background.js",
-      "source_location": "L202",
+      "source_location": "L200",
       "weight": 1.0
     },
     {
@@ -2617,7 +2125,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/background.js",
-      "source_location": "L237",
+      "source_location": "L235",
       "weight": 1.0
     },
     {
@@ -2629,7 +2137,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/background.js",
-      "source_location": "L243",
+      "source_location": "L241",
       "weight": 1.0
     },
     {
@@ -2641,7 +2149,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/background.js",
-      "source_location": "L249",
+      "source_location": "L247",
       "weight": 1.0
     },
     {
@@ -2653,7 +2161,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/background.js",
-      "source_location": "L42",
+      "source_location": "L40",
       "weight": 1.0
     },
     {
@@ -3397,7 +2905,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "popup.js",
-      "source_location": "L130",
+      "source_location": "L180",
       "weight": 1.0
     },
     {
@@ -3421,7 +2929,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ai-injector.js",
-      "source_location": "L690",
+      "source_location": "L675",
       "weight": 1.0
     },
     {
@@ -3433,7 +2941,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/background.js",
-      "source_location": "L105",
+      "source_location": "L103",
       "weight": 1.0
     },
     {
@@ -3445,7 +2953,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/background.js",
-      "source_location": "L124",
+      "source_location": "L122",
       "weight": 1.0
     },
     {
@@ -3457,7 +2965,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/background.js",
-      "source_location": "L134",
+      "source_location": "L132",
       "weight": 1.0
     },
     {
@@ -3469,7 +2977,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/background.js",
-      "source_location": "L673",
+      "source_location": "L649",
       "weight": 1.0
     },
     {
@@ -3776,17 +3284,6 @@
     },
     {
       "source": "popup",
-      "target": "popup_scanquestions",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "popup.js",
-      "source_location": "L157",
-      "weight": 1.0
-    },
-    {
-      "source": "popup",
       "target": "popup_statusbar",
       "relation": "contains",
       "_origin": "ast",
@@ -3805,17 +3302,6 @@
       "confidence_score": 1.0,
       "source_file": "popup.js",
       "source_location": "L18",
-      "weight": 1.0
-    },
-    {
-      "source": "popup",
-      "target": "popup_clearcache",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "popup.js",
-      "source_location": "L188",
       "weight": 1.0
     },
     {
@@ -3842,7 +3328,7 @@
     },
     {
       "source": "popup",
-      "target": "popup_updatestats",
+      "target": "popup_scanquestions",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -3886,6 +3372,17 @@
     },
     {
       "source": "popup",
+      "target": "popup_clearcache",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "popup.js",
+      "source_location": "L238",
+      "weight": 1.0
+    },
+    {
+      "source": "popup",
       "target": "popup_charcount",
       "relation": "contains",
       "_origin": "ast",
@@ -3897,17 +3394,6 @@
     },
     {
       "source": "popup",
-      "target": "popup_startautoanswer",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "popup.js",
-      "source_location": "L249",
-      "weight": 1.0
-    },
-    {
-      "source": "popup",
       "target": "popup_progresswrap",
       "relation": "contains",
       "_origin": "ast",
@@ -3915,6 +3401,17 @@
       "confidence_score": 1.0,
       "source_file": "popup.js",
       "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "popup",
+      "target": "popup_updatestats",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "popup.js",
+      "source_location": "L257",
       "weight": 1.0
     },
     {
@@ -3963,6 +3460,17 @@
     },
     {
       "source": "popup",
+      "target": "popup_startautoanswer",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "popup.js",
+      "source_location": "L299",
+      "weight": 1.0
+    },
+    {
+      "source": "popup",
       "target": "popup_lms_patterns",
       "relation": "contains",
       "_origin": "ast",
@@ -3996,17 +3504,6 @@
     },
     {
       "source": "popup",
-      "target": "popup_waitforcompletion",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "popup.js",
-      "source_location": "L310",
-      "weight": 1.0
-    },
-    {
-      "source": "popup",
       "target": "popup_notonlmsnotice",
       "relation": "contains",
       "_origin": "ast",
@@ -4029,13 +3526,24 @@
     },
     {
       "source": "popup",
+      "target": "popup_waitforcompletion",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "popup.js",
+      "source_location": "L373",
+      "weight": 1.0
+    },
+    {
+      "source": "popup",
       "target": "popup_oncompleted",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "popup.js",
-      "source_location": "L354",
+      "source_location": "L410",
       "weight": 1.0
     },
     {
@@ -4046,7 +3554,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "popup.js",
-      "source_location": "L365",
+      "source_location": "L421",
       "weight": 1.0
     },
     {
@@ -4057,7 +3565,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "popup.js",
-      "source_location": "L370",
+      "source_location": "L426",
       "weight": 1.0
     },
     {
@@ -4068,7 +3576,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "popup.js",
-      "source_location": "L384",
+      "source_location": "L440",
       "weight": 1.0
     },
     {
@@ -4079,7 +3587,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "popup.js",
-      "source_location": "L388",
+      "source_location": "L444",
       "weight": 1.0
     },
     {
@@ -4090,7 +3598,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "popup.js",
-      "source_location": "L394",
+      "source_location": "L450",
       "weight": 1.0
     },
     {
@@ -4101,29 +3609,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "popup.js",
-      "source_location": "L400",
-      "weight": 1.0
-    },
-    {
-      "source": "src_ai_injector",
-      "target": "src_ai_injector_sleep",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/ai-injector.js",
-      "source_location": "L23",
-      "weight": 1.0
-    },
-    {
-      "source": "src_ai_injector",
-      "target": "src_ai_injector_injecttowebengine",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/ai-injector.js",
-      "source_location": "L232",
+      "source_location": "L456",
       "weight": 1.0
     },
     {
@@ -4134,7 +3620,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ai-injector.js",
-      "source_location": "L26",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "src_ai_injector",
+      "target": "src_ai_injector_injecttowebengine",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/ai-injector.js",
+      "source_location": "L217",
       "weight": 1.0
     },
     {
@@ -4145,7 +3642,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ai-injector.js",
-      "source_location": "L392",
+      "source_location": "L377",
       "weight": 1.0
     },
     {
@@ -4156,7 +3653,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ai-injector.js",
-      "source_location": "L423",
+      "source_location": "L408",
       "weight": 1.0
     },
     {
@@ -4167,7 +3664,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ai-injector.js",
-      "source_location": "L501",
+      "source_location": "L486",
       "weight": 1.0
     },
     {
@@ -4178,7 +3675,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ai-injector.js",
-      "source_location": "L582",
+      "source_location": "L567",
       "weight": 1.0
     },
     {
@@ -4189,7 +3686,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ai-injector.js",
-      "source_location": "L736",
+      "source_location": "L715",
       "weight": 1.0
     },
     {
@@ -4200,29 +3697,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ai-injector.js",
-      "source_location": "L760",
+      "source_location": "L739",
       "weight": 1.0
     },
     {
       "source": "src_ai_injector",
-      "target": "src_ai_injector_waitfor",
+      "target": "src_ai_injector_sleep",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ai-injector.js",
-      "source_location": "L9",
-      "weight": 1.0
-    },
-    {
-      "source": "src_background",
-      "target": "src_background_groq_api_keys",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/background.js",
-      "source_location": "L11",
+      "source_location": "L8",
       "weight": 1.0
     },
     {
@@ -4233,7 +3719,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/background.js",
-      "source_location": "L17",
+      "source_location": "L13",
       "weight": 1.0
     },
     {
@@ -4244,7 +3730,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/background.js",
-      "source_location": "L23",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "src_background",
+      "target": "src_background_getapikeys",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/background.js",
+      "source_location": "L25",
       "weight": 1.0
     },
     {
@@ -4255,29 +3752,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/background.js",
-      "source_location": "L255",
-      "weight": 1.0
-    },
-    {
-      "source": "src_background",
-      "target": "src_background_callgeminiapi",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/background.js",
-      "source_location": "L324",
-      "weight": 1.0
-    },
-    {
-      "source": "src_background",
-      "target": "src_background_getnextgroqkey",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/background.js",
-      "source_location": "L33",
+      "source_location": "L253",
       "weight": 1.0
     },
     {
@@ -4288,7 +3763,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/background.js",
-      "source_location": "L355",
+      "source_location": "L331",
       "weight": 1.0
     },
     {
@@ -4299,7 +3774,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/background.js",
-      "source_location": "L41",
+      "source_location": "L39",
       "weight": 1.0
     },
     {
@@ -4310,7 +3785,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/background.js",
-      "source_location": "L45",
+      "source_location": "L43",
       "weight": 1.0
     },
     {
@@ -4321,7 +3796,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/background.js",
-      "source_location": "L552",
+      "source_location": "L528",
       "weight": 1.0
     },
     {
@@ -4332,7 +3807,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/background.js",
-      "source_location": "L627",
+      "source_location": "L603",
       "weight": 1.0
     },
     {
@@ -4777,7 +4252,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "src/ai-injector.js",
-      "source_location": "L777",
+      "source_location": "L757",
       "weight": 1.0
     },
     {
@@ -4805,158 +4280,38 @@
       "weight": 1.0
     },
     {
-      "source": "_p_skill_frontend_design",
-      "target": "popup_popup_ui",
-      "relation": "conceptually_related_to",
-      "confidence": "AMBIGUOUS",
-      "confidence_score": 0.2,
-      "source_file": "popup.html",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "_p_skill_space_grotesk",
-      "target": "popup_popup_ui",
-      "relation": "conceptually_related_to",
-      "confidence": "AMBIGUOUS",
-      "confidence_score": 0.2,
-      "source_file": "popup.html",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "icons_icon48_app_icon",
-      "target": "icons_icon48_extension_icon_concept",
-      "relation": "conceptually_related_to",
-      "confidence": "AMBIGUOUS",
-      "confidence_score": 0.25,
-      "source_file": "icons/icon48.png",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "readme_q_coding",
-      "target": "readme_tipe_soal",
-      "relation": "conceptually_related_to",
+      "source": "manifest",
+      "target": "icons_extension_icons",
+      "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "README.md",
+      "source_file": "manifest.json",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "readme_q_essay",
-      "target": "readme_tipe_soal",
-      "relation": "conceptually_related_to",
+      "source": "manifest",
+      "target": "popup",
+      "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "README.md",
+      "source_file": "manifest.json",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "readme_q_isian_singkat",
-      "target": "readme_tipe_soal",
-      "relation": "conceptually_related_to",
+      "source": "manifest",
+      "target": "src_background",
+      "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "README.md",
+      "source_file": "manifest.json",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "readme_q_multi_kotak",
-      "target": "readme_tipe_soal",
-      "relation": "conceptually_related_to",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "readme_q_multi_select",
-      "target": "readme_tipe_soal",
-      "relation": "conceptually_related_to",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "readme_q_pilihan_ganda",
-      "target": "readme_tipe_soal",
-      "relation": "conceptually_related_to",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "readme_q_true_false",
-      "target": "readme_tipe_soal",
-      "relation": "conceptually_related_to",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "readme_uglab",
-      "target": "readme_auto_jawab",
-      "relation": "implements",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "_p_skill_avoid_ai_slop",
-      "target": "_p_skill_frontend_design",
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "-p/SKILL.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "_p_skill_design_thinking",
-      "target": "_p_skill_frontend_design",
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "-p/SKILL.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "_p_skill_frontend_aesthetics",
-      "target": "_p_skill_frontend_design",
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "-p/SKILL.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "_p_skill_space_grotesk",
-      "target": "_p_skill_frontend_design",
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "-p/SKILL.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "popup_mode_web",
-      "target": "popup_engine_chatgpt",
+      "source": "popup_html_ui",
+      "target": "icons_logo_png",
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -4965,27 +4320,7 @@
       "weight": 1.0
     },
     {
-      "source": "popup_mode_web",
-      "target": "popup_engine_claude",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "popup.html",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "popup_mode_web",
-      "target": "popup_engine_gemini",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "popup.html",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "popup_popup_ui",
+      "source": "popup_html_ui",
       "target": "popup",
       "relation": "references",
       "confidence": "EXTRACTED",
@@ -4995,315 +4330,111 @@
       "weight": 1.0
     },
     {
-      "source": "popup_popup_ui",
-      "target": "popup_engine_chatgpt",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "popup.html",
+      "source": "popup",
+      "target": "src_background",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "popup.js",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "popup_popup_ui",
-      "target": "popup_engine_claude",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "popup.html",
+      "source": "uglab_message_bus",
+      "target": "uglab_ai_orchestration",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "src/background.js",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "popup_popup_ui",
-      "target": "popup_engine_gemini",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "popup.html",
+      "source": "uglab_message_bus",
+      "target": "uglab_lms_integration_pattern",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "src/background.js",
       "source_location": null,
       "weight": 1.0
     },
     {
-      "source": "popup_popup_ui",
-      "target": "popup_extra_prompt",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "popup.html",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "popup_popup_ui",
-      "target": "popup_loop_mode",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "popup.html",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "popup_popup_ui",
-      "target": "popup_mode_api",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "popup.html",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "popup_popup_ui",
-      "target": "popup_mode_web",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "popup.html",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "readme_ai_tab_injector",
-      "target": "readme_msg_ai_result",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "readme_background_service_worker",
-      "target": "readme_ai_tab_injector",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "readme_background_service_worker",
-      "target": "readme_msg_ai_result",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "readme_background_service_worker",
-      "target": "readme_msg_prelab_answers",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "readme_background_service_worker",
-      "target": "readme_msg_prelab_start",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "readme_lms_content_script",
-      "target": "readme_msg_prelab_answers",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "readme_popup_ui",
-      "target": "readme_lms_content_script",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "readme_popup_ui",
-      "target": "readme_msg_prelab_start",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
+      "source": "src_ai_injector",
+      "target": "src_lms_content",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "src/ai-injector.js",
       "source_location": null,
       "weight": 1.0
     },
     {
       "source": "readme_uglab",
-      "target": "readme_chatgpt",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "readme_uglab",
-      "target": "readme_gemini",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "readme_uglab",
-      "target": "readme_ilab",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "readme_uglab",
-      "target": "readme_vclass",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "popup_loop_mode",
-      "target": "readme_auto_jawab",
-      "relation": "conceptually_related_to",
-      "confidence": "INFERRED",
-      "confidence_score": 0.75,
-      "source_file": "popup.html",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "readme_ilab",
-      "target": "readme_vclass",
-      "relation": "conceptually_related_to",
-      "confidence": "INFERRED",
-      "confidence_score": 0.75,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "popup_engine_chatgpt",
-      "target": "readme_chatgpt",
-      "relation": "conceptually_related_to",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "popup.html",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "popup_engine_gemini",
-      "target": "readme_gemini",
-      "relation": "conceptually_related_to",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "popup.html",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "readme_ai_tab_injector",
-      "target": "readme_gemini",
-      "relation": "references",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "readme_lms_content_script",
-      "target": "readme_tipe_soal",
-      "relation": "references",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "popup_popup_ui",
-      "target": "readme_popup_ui",
+      "target": "uglab_ai_orchestration",
       "relation": "conceptually_related_to",
       "confidence": "INFERRED",
       "confidence_score": 0.95,
-      "source_file": "popup.html",
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "readme_uglab",
+      "target": "uglab_lms_integration_pattern",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_ai_injector",
+      "target": "uglab_ai_orchestration",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "src/ai-injector.js",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_background",
+      "target": "uglab_message_bus",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "src/background.js",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_lms_content",
+      "target": "uglab_lms_integration_pattern",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "src/lms-content.js",
       "source_location": null,
       "weight": 1.0
     }
   ],
   "hyperedges": [
     {
-      "id": "he_auto_jawab_pipeline",
-      "label": "Auto-Jawab Message Pipeline",
+      "id": "extension_runtime_lifecycle",
+      "label": "Chrome Extension Runtime Lifecycle",
       "nodes": [
-        "readme_popup_ui",
-        "readme_msg_prelab_start",
-        "readme_background_service_worker",
-        "readme_ai_tab_injector",
-        "readme_msg_ai_result",
-        "readme_msg_prelab_answers",
-        "readme_lms_content_script"
+        "src_background",
+        "src_lms_content",
+        "popup",
+        "src_ai_injector"
       ],
       "relation": "participate_in",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md"
-    },
-    {
-      "id": "he_question_types",
-      "label": "Supported Question Type Set",
-      "nodes": [
-        "readme_tipe_soal",
-        "readme_q_pilihan_ganda",
-        "readme_q_true_false",
-        "readme_q_multi_select",
-        "readme_q_isian_singkat",
-        "readme_q_essay",
-        "readme_q_coding",
-        "readme_q_multi_kotak"
-      ],
-      "relation": "form",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md"
-    },
-    {
-      "id": "he_web_engine_selection",
-      "label": "Web Mode Engine Selection",
-      "nodes": [
-        "popup_mode_web",
-        "popup_engine_gemini",
-        "popup_engine_chatgpt",
-        "popup_engine_claude"
-      ],
-      "relation": "form",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "popup.html"
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "manifest.json"
     }
-  ]
+  ],
+  "built_at_commit": "b0f7377e14657c768db95d3d84a3bc702ba9e636"
 }

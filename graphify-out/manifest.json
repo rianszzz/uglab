@@ -82,5 +82,89 @@
     "seen": 1791173024.800256,
     "ast_hash": "3191d75e64401fffd1f1eff365098bd0",
     "semantic_hash": "3191d75e64401fffd1f1eff365098bd0"
+  },
+  "/Users/rian/Downloads/uglab-2/.cursor/mcp.json": {
+    "mtime": 1791692819.9873037,
+    "seen": 1791692971.383622,
+    "ast_hash": "248f2002b4f078af61910d88240f0d72",
+    "semantic_hash": "248f2002b4f078af61910d88240f0d72"
+  },
+  "/Users/rian/Downloads/uglab-2/manifest.json": {
+    "mtime": 1783454684.8219113,
+    "seen": 1791692971.3836281,
+    "ast_hash": "a6e660383545dd548b6a9a6b6f374c84",
+    "semantic_hash": "a6e660383545dd548b6a9a6b6f374c84"
+  },
+  "/Users/rian/Downloads/uglab-2/popup.js": {
+    "mtime": 1791184439.8074603,
+    "seen": 1791692971.38363,
+    "ast_hash": "33abce5004104530568081e75246076a",
+    "semantic_hash": "33abce5004104530568081e75246076a"
+  },
+  "/Users/rian/Downloads/uglab-2/src/ai-injector.js": {
+    "mtime": 1791175721.3975825,
+    "seen": 1791692971.383632,
+    "ast_hash": "3ff181687962cae56d2d580f735dd89b",
+    "semantic_hash": "3ff181687962cae56d2d580f735dd89b"
+  },
+  "/Users/rian/Downloads/uglab-2/src/background.js": {
+    "mtime": 1791184385.2813737,
+    "seen": 1791692971.383633,
+    "ast_hash": "b6e03d1e6d012d6a32a7f61a6e965b96",
+    "semantic_hash": "b6e03d1e6d012d6a32a7f61a6e965b96"
+  },
+  "/Users/rian/Downloads/uglab-2/src/lms-content.js": {
+    "mtime": 1783454254.6972644,
+    "seen": 1791692971.383635,
+    "ast_hash": "507bd018a88cb79ccc279f7a0feaf34b",
+    "semantic_hash": "507bd018a88cb79ccc279f7a0feaf34b"
+  },
+  "/Users/rian/Downloads/uglab-2/-p/SKILL.md": {
+    "mtime": 1777022744.0,
+    "seen": 1791692971.383636,
+    "ast_hash": "5c392562ec1cf5ffa6b9d2319375373f",
+    "semantic_hash": "5c392562ec1cf5ffa6b9d2319375373f"
+  },
+  "/Users/rian/Downloads/uglab-2/README.md": {
+    "mtime": 1791184457.5476387,
+    "seen": 1791692971.383637,
+    "ast_hash": "b880c73f8c2888815a1fd8eb07744b43",
+    "semantic_hash": "b880c73f8c2888815a1fd8eb07744b43"
+  },
+  "/Users/rian/Downloads/uglab-2/popup.html": {
+    "mtime": 1791184486.924265,
+    "seen": 1791692971.383641,
+    "ast_hash": "8e3ca34346fc00298bdb5e1e1f1a5ed0",
+    "semantic_hash": "8e3ca34346fc00298bdb5e1e1f1a5ed0"
+  },
+  "/Users/rian/Downloads/uglab-2/icons/icon128.png": {
+    "mtime": 1777025302.0,
+    "seen": 1791692971.3836422,
+    "ast_hash": "1c8479c7c0fe6b07540ba9614b7d5d8a",
+    "semantic_hash": "1c8479c7c0fe6b07540ba9614b7d5d8a"
+  },
+  "/Users/rian/Downloads/uglab-2/icons/icon16.png": {
+    "mtime": 1777025302.0,
+    "seen": 1791692971.383643,
+    "ast_hash": "a1c6cc543179224a101517515f13fc1d",
+    "semantic_hash": "a1c6cc543179224a101517515f13fc1d"
+  },
+  "/Users/rian/Downloads/uglab-2/icons/icon32.png": {
+    "mtime": 1777025302.0,
+    "seen": 1791692971.3836439,
+    "ast_hash": "1325920d2d4f747a385486ebf02cef75",
+    "semantic_hash": "1325920d2d4f747a385486ebf02cef75"
+  },
+  "/Users/rian/Downloads/uglab-2/icons/icon48.png": {
+    "mtime": 1777025302.0,
+    "seen": 1791692971.3836448,
+    "ast_hash": "a47e6fbd9581af8517b7241c77eaea8e",
+    "semantic_hash": "a47e6fbd9581af8517b7241c77eaea8e"
+  },
+  "/Users/rian/Downloads/uglab-2/icons/logo.png": {
+    "mtime": 1777025130.0,
+    "seen": 1791692971.383647,
+    "ast_hash": "3191d75e64401fffd1f1eff365098bd0",
+    "semantic_hash": "3191d75e64401fffd1f1eff365098bd0"
   }
 }
