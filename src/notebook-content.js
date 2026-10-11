@@ -84,43 +84,35 @@
       const models = typeof window.monaco !== "undefined" ? window.monaco.editor.getModels() : [];
       const cells = Array.from(document.querySelectorAll(".cell"));
       
-      // Filter cell yang berisi soal
-      const exerciseCells = cells.filter(c => {
-        const t = c.innerText || "";
-        return t.includes("# CODE HERE") || t.includes("<...>") || t.includes("# ...");
+      // Filter model Monaco yang merupakan code cell soal (dimulai dari model 13 dst)
+      const targetModels = models.filter(m => {
+        const v = m.getValue();
+        return (v.includes("# CODE HERE") || v.includes("<...>")) && !m.uri.toString().endsWith("/1") && !m.uri.toString().endsWith("/9");
       });
 
       for (let i = 0; i < answers.length; i++) {
         const ans = answers[i];
         let codeAnswer = (typeof ans.jawaban === "string" ? ans.jawaban : "").trim();
-        // Bersihkan markdown fences jika ada
         codeAnswer = codeAnswer.replace(/^```[a-zA-Z]*\n?/, "").replace(/\n?```$/, "").trim();
         if (!codeAnswer) continue;
 
-        // 1. Coba isi via Monaco Model
-        let filledViaMonaco = false;
-        for (const m of models) {
+        // 1. Isi via Monaco model yang berurutan
+        const m = targetModels[i];
+        if (m) {
           const val = m.getValue();
-          if (val.includes("# CODE HERE") || val.includes("<...>")) {
-            // Gantikan tag placeholder <...> dengan jawaban kode jika ada
-            let newVal = val.includes("<...>") ? val.replace("<...>", codeAnswer) : val + "\n" + codeAnswer;
-            m.setValue(newVal);
-            filledViaMonaco = true;
-            break;
-          }
+          let newVal = val.includes("<...>") ? val.replace("<...>", codeAnswer) : val + "\n" + codeAnswer;
+          m.setValue(newVal);
         }
 
-        // 2. Fallback via DOM selection & input
+        // 2. Trigger Run Button di cell yang bersesuaian
         const targetCell = exerciseCells[i];
         if (targetCell) {
           targetCell.scrollIntoView({ behavior: "smooth", block: "center" });
-          await sleep(300);
-
-          // Trigger Run Button di Colab jika ada
+          await sleep(200);
           const runBtn = targetCell.querySelector("colab-run-button, .cell-execution-container, [aria-label*='Run']");
           if (runBtn) {
             runBtn.click();
-            await sleep(800);
+            await sleep(500);
           }
         }
       }
