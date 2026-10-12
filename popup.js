@@ -150,7 +150,9 @@ function setupListeners() {
     el?.addEventListener("click", () => {
       [webGemini, webChatGPT, webClaude].forEach(m => m?.classList.remove("active"));
       el.classList.add("active");
-      chrome.storage.local.set({ prelab_web_engine: el.dataset.engine });
+      modeAPI?.classList.remove("active");
+      modeWeb?.classList.add("active");
+      chrome.storage.local.set({ prelab_web_engine: el.dataset.engine, prelab_run_mode: "web" });
       log("info", `Web Engine diganti ke: ${el.dataset.engine.toUpperCase()}`);
     });
   });
@@ -185,7 +187,12 @@ async function detectCurrentTab() {
   setStatus("loading", "Mendeteksi halaman...");
 
   try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab?.url?.startsWith("chrome-extension://")) {
+      const allTabs = await chrome.tabs.query({});
+      const lmsTab = allTabs.find(t => !t.url?.startsWith("chrome-extension://") && (t.url?.includes("colab.") || t.url?.includes("gunadarma.ac.id") || t.url?.includes("jupyter") || (t.url?.includes("localhost") && (t.url?.includes(":8888") || t.url?.includes("/lab")))));
+      if (lmsTab) tab = lmsTab;
+    }
     if (!tab) { setStatus("error", "Tidak ada tab aktif"); return; }
 
     currentTabId = tab.id;
@@ -214,7 +221,125 @@ async function scanQuestions() {
   btnScan.disabled = true;
 
   try {
-    const res = await chrome.tabs.sendMessage(currentTabId, { type: "PRELAB_SCRAPE" });
+    let res = null;
+    let [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (activeTab?.url?.startsWith("chrome-extension://") && currentTabId) {
+      activeTab = await chrome.tabs.get(currentTabId).catch(() => activeTab);
+    }
+    const isNotebook = activeTab?.url?.includes("colab.") || activeTab?.url?.includes("jupyter");
+    if (!isNotebook) {
+      try {
+        res = await chrome.tabs.sendMessage(currentTabId, { type: "PRELAB_SCRAPE" });
+      } catch { }
+    }
+    if (!res) {
+      // Fallback or Notebook MAIN world execution
+      const [execRes] = await chrome.scripting.executeScript({
+        target: { tabId: currentTabId },
+        world: "MAIN",
+        func: () => {
+          let globalCtx = "";
+          const nb = window.colab?.global?.notebook;
+          if (nb?.cells) {
+            nb.cells.forEach(c => {
+              if (c.model?.type === "markdown" || c.model?.type === "text") {
+                const t = (c.model?.getText() || "").trim();
+                if (t.includes("Instruksi") || t.includes("Overview") || t.includes("Petunjuk") || t.includes("http")) {
+                  globalCtx += t.slice(0, 800) + "\n\n";
+                }
+              }
+            });
+            let qIndex = 0; const qs = [];
+            nb.cells.forEach((cell, idx) => {
+              if (cell.model?.type !== "code") return;
+              const text = (cell.model.getText() || "").trim();
+              if (text.includes("# CODE HERE") || text.includes("<...>") || text.includes("# ...")) {
+                let ctx = "";
+                for (let p = Math.max(0, idx - 2); p < idx; p++) {
+                  const prev = (nb.cells[p]?.model?.getText() || "").trim();
+                  if (prev && !prev.includes("# CODE HERE")) ctx += prev.slice(0, 300) + "\n";
+                }
+                qs.push({
+                  index: qIndex++,
+                  cellId: cell.cellId || cell.id,
+                  type: "coding",
+                  globalContext: globalCtx.trim(),
+                  text: `${globalCtx ? `[Petunjuk & Modul]:\n${globalCtx.trim()}\n\n` : ""}[Konteks Modul]:\n${ctx}\n\n[Kode Soal]:\n${text}`,
+                  rawCode: text
+                });
+              }
+            });
+            return qs;
+          }
+
+          if (typeof window.Jupyter !== "undefined" && window.Jupyter.notebook?.get_cells) {
+            document.querySelectorAll(".jp-MarkdownCell, .cell.text").forEach(c => {
+              const t = (c.innerText || "").trim();
+              if (t.includes("Instruksi") || t.includes("Overview") || t.includes("Petunjuk") || t.includes("http")) {
+                globalCtx += t.slice(0, 800) + "\n\n";
+              }
+            });
+            let qIndex = 0; const qs = [];
+            const jCells = window.Jupyter.notebook.get_cells();
+            jCells.forEach((c, idx) => {
+              if (c.cell_type !== "code") return;
+              const text = (c.get_text() || "").trim();
+              if (text.includes("# CODE HERE") || text.includes("<...>") || text.includes("# ...")) {
+                let ctx = "";
+                for (let p = Math.max(0, idx - 2); p < idx; p++) {
+                  const prev = (jCells[p]?.get_text() || "").trim();
+                  if (prev && !prev.includes("# CODE HERE")) ctx += prev.slice(0, 300) + "\n";
+                }
+                qs.push({
+                  index: qIndex++,
+                  type: "coding",
+                  globalContext: globalCtx.trim(),
+                  text: `${globalCtx ? `[Petunjuk & Modul]:\n${globalCtx.trim()}\n\n` : ""}[Konteks Modul]:\n${ctx}\n\n[Kode Soal]:\n${text}`,
+                  rawCode: text
+                });
+              }
+            });
+            if (qs.length) return qs;
+          }
+
+          const jpCells = Array.from(document.querySelectorAll('.jp-CodeCell, .jp-Cell'));
+          if (jpCells.length) {
+            document.querySelectorAll(".jp-MarkdownCell, .cell.text").forEach(c => {
+              const t = (c.innerText || "").trim();
+              if (t.includes("Instruksi") || t.includes("Overview") || t.includes("Petunjuk") || t.includes("http")) {
+                globalCtx += t.slice(0, 800) + "\n\n";
+              }
+            });
+            let qIndex = 0; const qs = [];
+            jpCells.forEach((cell, idx) => {
+              const cm = cell.querySelector('.cm-content');
+              const text = (cm?.cmView?.view?.state?.doc?.toString() || cm?.innerText || cell.innerText || "").trim();
+              if (text.includes("# CODE HERE") || text.includes("<...>") || text.includes("# ...")) {
+                let ctx = "";
+                for (let p = Math.max(0, idx - 2); p < idx; p++) {
+                  const prev = (jpCells[p]?.querySelector('.cm-content')?.innerText || jpCells[p]?.innerText || "").trim();
+                  if (prev && !prev.includes("# CODE HERE")) ctx += prev.slice(0, 300) + "\n";
+                }
+                qs.push({
+                  index: qIndex++,
+                  type: "coding",
+                  globalContext: globalCtx.trim(),
+                  text: `${globalCtx ? `[Petunjuk & Modul]:\n${globalCtx.trim()}\n\n` : ""}[Konteks Modul]:\n${ctx}\n\n[Kode Soal]:\n${text}`,
+                  rawCode: text
+                });
+              }
+            });
+            if (qs.length) return qs;
+          }
+
+          return null;
+        }
+      });
+      if (execRes?.result?.length) {
+        await chrome.storage.local.set({ prelab_questions_cache: execRes.result });
+        res = { questions: execRes.result.map(q => ({ index: q.index, type: q.type, text: q.text.slice(0, 100), hasImages: false })), count: execRes.result.length };
+      }
+    }
 
     if (res?.questions && res.questions.length > 0) {
       detectedQuestions = res.questions;
@@ -306,27 +431,26 @@ async function startAutoAnswer() {
   isRunning = true;
   setBtnLoading(true);
 
+  const modeRes = await chrome.storage.local.get(["prelab_run_mode", "prelab_web_engine", "prelab_api_keys"]);
+  const mode = $("mode-web")?.classList.contains("active") ? "web" : (modeRes.prelab_run_mode || "api");
+  const webEngine = $("web-chatgpt")?.classList.contains("active") ? "chatgpt" : ($("web-claude")?.classList.contains("active") ? "claude" : (modeRes.prelab_web_engine || "gemini"));
+  const isWeb = mode === "web";
+  const webEngineName = webEngine === "chatgpt" ? "ChatGPT Web" : webEngine === "claude" ? "Claude Web" : "Gemini Web";
+
   const hasImages = detectedQuestions.some(q => q.hasImages);
   const engineLabelEl = document.getElementById("engineLabel");
   const engineModelEl = document.getElementById("engineModel");
-  if (hasImages) {
-    if (engineLabelEl) engineLabelEl.textContent = "SambaNova Vision";
-    if (engineModelEl) engineModelEl.textContent = "Meta-Llama-3.3-70B (Teks Saja)";
-  } else {
-    if (engineLabelEl) engineLabelEl.textContent = "SambaNova Text";
-    if (engineModelEl) engineModelEl.textContent = "Meta-Llama-3.3-70B";
-  }
+  const engineName = isWeb ? webEngineName : (hasImages ? "SambaNova Vision" : "SambaNova Text");
 
-  const engineName = hasImages ? "SambaNova Vision" : "SambaNova Text";
+  if (engineLabelEl) engineLabelEl.textContent = engineName;
+  if (engineModelEl) engineModelEl.textContent = isWeb ? (webEngine === "chatgpt" ? "GPT-4o" : "Gemini 2.5") : (hasImages ? "Meta-Llama-3.3-70B (Teks Saja)" : "Meta-Llama-3.3-70B");
+
   setStatus("active", `Mengirim ke ${engineName}...`);
   showProgress(true);
   log("info", "Memulai proses auto-jawab...");
-  log("info", `Routing: ${detectedQuestions.length} soal → ${engineName}${hasImages ? " (PERINGATAN: SambaNova tidak baca gambar!)" : ""}`);
+  log("info", `Routing: ${detectedQuestions.length} soal → ${engineName}${hasImages && !isWeb ? " (PERINGATAN: SambaNova tidak baca gambar!)" : ""}`);
 
   try {
-    const modeRes = await chrome.storage.local.get(["prelab_run_mode", "prelab_web_engine", "prelab_api_keys"]);
-    const mode = modeRes.prelab_run_mode || "api";
-    const webEngine = modeRes.prelab_web_engine || "gemini";
     const apiKeys = (modeRes.prelab_api_keys || "").trim();
 
     if (mode === "api" && !apiKeys) {
@@ -341,8 +465,8 @@ async function startAutoAnswer() {
       return;
     }
 
-    // Persist extraPrompt so loop continuation pages reuse the same instruction
-    await chrome.storage.local.set({ prelab_extra_prompt: extraPrompt.value.trim() });
+    // Persist mode & extraPrompt so loop continuation pages reuse the same instruction
+    await chrome.storage.local.set({ prelab_run_mode: mode, prelab_web_engine: webEngine, prelab_extra_prompt: extraPrompt.value.trim() });
 
     const res = await chrome.runtime.sendMessage({
       type: "PRELAB_START",
@@ -354,8 +478,7 @@ async function startAutoAnswer() {
 
     if (res?.ok) {
       if (mode === "web") {
-        const engineDisplay = webEngine === "chatgpt" ? "ChatGPT Web" : webEngine === "claude" ? "Claude Web" : "Gemini Web";
-        setStatus("active", `Dilempar ke ${engineDisplay}...`);
+        setStatus("active", `Dilempar ke ${webEngineName}...`);
         log("ok", `Membuka ${webEngine === "chatgpt" ? "chatgpt.com" : webEngine === "claude" ? "claude.ai" : "gemini.google.com"}...`);
       } else {
         setStatus("active", `${engineName} sedang memproses...`);

@@ -18,55 +18,108 @@
   function scrapeNotebookQuestions() {
     const questions = [];
 
+    let globalContext = "";
     if (isColab()) {
-      const cells = Array.from(document.querySelectorAll(".cell"));
+      const nb = (typeof window !== "undefined" && window.colab?.global?.notebook) || (typeof colab !== "undefined" && colab?.global?.notebook);
+      if (nb && Array.isArray(nb.cells)) {
+        nb.cells.forEach(c => {
+          if (c.model?.type === "markdown" || c.model?.type === "text") {
+            const t = (c.model?.getText() || "").trim();
+            if (t.includes("Instruksi") || t.includes("Overview") || t.includes("Petunjuk") || t.includes("http")) {
+              globalContext += t.slice(0, 800) + "\n\n";
+            }
+          }
+        });
+        let qIndex = 0;
+        nb.cells.forEach((cell, idx) => {
+          if (!cell.model || cell.model.type !== "code") return;
+          const text = (cell.model.getText() || "").trim();
+          if (text.includes("# CODE HERE") || text.includes("<...>") || text.includes("# ...")) {
+            let context = "";
+            for (let p = Math.max(0, idx - 2); p < idx; p++) {
+              const prev = (nb.cells[p]?.model?.getText() || "").trim();
+              if (prev && !prev.includes("# CODE HERE")) {
+                context += prev.slice(0, 300) + "\n";
+              }
+            }
+
+            questions.push({
+              index: qIndex++,
+              cellId: cell.cellId,
+              type: "coding",
+              globalContext: globalContext.trim(),
+              text: `${globalContext ? `[Petunjuk & Modul]:\n${globalContext.trim()}\n\n` : ""}[Konteks Modul]:\n${context}\n\n[Kode Soal]:\n${text}`,
+              rawCode: text
+            });
+          }
+        });
+        return questions;
+      }
+
+      document.querySelectorAll(".cell.markdown, .cell.text, colab-cell.text").forEach(c => {
+        const t = (c.innerText || "").trim();
+        if (t.includes("Instruksi") || t.includes("Overview") || t.includes("Petunjuk") || t.includes("http")) {
+          globalContext += t.slice(0, 800) + "\n\n";
+        }
+      });
+      const cells = Array.from(document.querySelectorAll(".cell.code"));
       let qIndex = 0;
 
       cells.forEach((cell, idx) => {
         const text = (cell.innerText || "").trim();
-        // Ciri soal praktikum: # CODE HERE atau <...> atau # ...
         if (text.includes("# CODE HERE") || text.includes("<...>") || text.includes("# ...")) {
-          // Cari konteks dari cell markdown/teks sebelumnya jika ada
+          const allCells = Array.from(document.querySelectorAll(".cell"));
+          const currentCellPos = allCells.indexOf(cell);
           let context = "";
-          for (let p = Math.max(0, idx - 2); p < idx; p++) {
-            const prevText = (cells[p].innerText || "").trim();
+          for (let p = Math.max(0, currentCellPos - 2); p < currentCellPos; p++) {
+            const prevText = (allCells[p].innerText || "").trim();
             if (prevText && !prevText.includes("# CODE HERE")) {
               context += prevText.slice(0, 300) + "\n";
             }
           }
 
+          const cellId = cell.id ? cell.id.replace(/^cell-/, "") : (cell.getAttribute("data-cell-id") || "");
           questions.push({
             index: qIndex++,
+            cellId: cellId,
             cellIndex: idx,
             type: "coding",
-            text: `[Konteks Modul]:\n${context}\n\n[Kode Soal]:\n${text}`,
-            rawCode: text,
-            cellElement: cell
+            globalContext: globalContext.trim(),
+            text: `${globalContext ? `[Petunjuk & Modul]:\n${globalContext.trim()}\n\n` : ""}[Konteks Modul]:\n${context}\n\n[Kode Soal]:\n${text}`,
+            rawCode: text
           });
         }
       });
     } else if (isJupyter()) {
+      document.querySelectorAll(".jp-MarkdownCell, .cell.text").forEach(c => {
+        const t = (c.innerText || "").trim();
+        if (t.includes("Instruksi") || t.includes("Overview") || t.includes("Petunjuk") || t.includes("http")) {
+          globalContext += t.slice(0, 800) + "\n\n";
+        }
+      });
       const cells = Array.from(document.querySelectorAll(".jp-Cell, .cell"));
       let qIndex = 0;
 
       cells.forEach((cell, idx) => {
-        const text = (cell.innerText || "").trim();
+        const text = (cell.querySelector(".cm-content")?.innerText || cell.innerText || "").trim();
         if (text.includes("# CODE HERE") || text.includes("<...>") || text.includes("# ...")) {
           let context = "";
           for (let p = Math.max(0, idx - 2); p < idx; p++) {
-            const prevText = (cells[p].innerText || "").trim();
+            const prevText = (cells[p].querySelector(".cm-content")?.innerText || cells[p].innerText || "").trim();
             if (prevText && !prevText.includes("# CODE HERE")) {
               context += prevText.slice(0, 300) + "\n";
             }
           }
 
+          const cellId = cell.id ? cell.id.replace(/^cell-/, "") : (cell.getAttribute("data-cell-id") || "");
           questions.push({
             index: qIndex++,
+            cellId: cellId,
             cellIndex: idx,
             type: "coding",
-            text: `[Konteks Modul]:\n${context}\n\n[Kode Soal]:\n${text}`,
-            rawCode: text,
-            cellElement: cell
+            globalContext: globalContext.trim(),
+            text: `${globalContext ? `[Petunjuk & Modul]:\n${globalContext.trim()}\n\n` : ""}[Konteks Modul]:\n${context}\n\n[Kode Soal]:\n${text}`,
+            rawCode: text
           });
         }
       });
@@ -75,48 +128,136 @@
     return questions;
   }
 
+  function replaceCode(text, ans) {
+    const cleanAns = ans.trim();
+    if (!cleanAns || cleanAns === "TERPISAH") return text;
+    const trimmedText = text.trim();
+    if (!trimmedText || trimmedText === "# CODE HERE") return cleanAns;
+
+    const lines = text.split("\n");
+    const pIdx = lines.findIndex(l => l.includes("<...>") || l.includes("# ...") || l.trim() === "TERPISAH");
+    if (pIdx !== -1) {
+      const line = lines[pIdx].trim();
+      const isFull = cleanAns.includes("print(") || cleanAns.includes("=") || cleanAns.includes("\n") ||
+        /\.\w+\(/.test(cleanAns) || /^['"]?<...>['"]?;?$/.test(line) || line === "# ..." || line === "TERPISAH";
+      if (isFull) {
+        const indent = lines[pIdx].match(/^\s*/)[0];
+        lines[pIdx] = cleanAns.split("\n").map(l => indent + l).join("\n");
+        return lines.join("\n");
+      }
+    }
+
+    if (text.includes("'<...>'") || text.includes("'TERPISAH'")) {
+      const p = text.includes("'<...>'") ? "'<...>'" : "'TERPISAH'";
+      return text.replace(p, /^['"].*['"]$/.test(cleanAns) ? cleanAns : `'${cleanAns}'`);
+    }
+    if (text.includes('"<...>"') || text.includes('"TERPISAH"')) {
+      const p = text.includes('"<...>"') ? '"<...>"' : '"TERPISAH"';
+      return text.replace(p, /^['"].*['"]$/.test(cleanAns) ? cleanAns : `"${cleanAns}"`);
+    }
+    if (text.includes("<...>")) {
+      return text.replace(/<[.\s]*\.\.\.[.\s]*>/g, () => cleanAns);
+    }
+    if (text.includes("# ...")) {
+      return text.replace(/^([ \t]*)#\s*\.\.\.\s*$/m, (m, indent) => {
+        return cleanAns.split("\n").map((l, i) => i === 0 ? indent + l : indent + l).join("\n");
+      });
+    }
+    return text;
+  }
+
   // ─── Fill & Run Notebook Cells ───────────────────────────────────────────────
   async function fillNotebookAnswers(answers) {
     if (!answers || !answers.length) return;
 
     if (isColab()) {
-      // Di Google Colab, model Monaco aktif dapat diakses via window.monaco atau interaksi DOM
+      window.postMessage({ type: "UGLAB_NOTEBOOK_FILL", answers }, "*");
+      // 1. Google Colab Native DOM & Cell Model update
+      const nb = (typeof window !== "undefined" && window.colab?.global?.notebook) || (typeof colab !== "undefined" && colab?.global?.notebook);
+      if (nb && Array.isArray(nb.cells)) {
+        const exerciseCells = nb.cells.filter(c => {
+          if (!c.model || c.model.type !== "code") return false;
+          const t = c.model.getText() || "";
+          return t.includes("# CODE HERE") || t.includes("<...>") || t.includes("# ...");
+        });
+
+        for (let i = 0; i < answers.length; i++) {
+          const ans = answers[i];
+          let codeAnswer = (typeof ans.jawaban === "string" ? ans.jawaban : "").trim();
+          codeAnswer = codeAnswer.replace(/^```[a-zA-Z]*\n?/, "").replace(/\n?```$/, "").trim();
+          if (!codeAnswer || codeAnswer === "TERPISAH") continue;
+
+          const targetCell = (ans?.cellId && nb.cells.find(c => c.cellId === ans.cellId || c.id === ans.cellId)) || exerciseCells[i];
+          if (targetCell?.model) {
+            const currentText = targetCell.model.getText() || "";
+            const updated = replaceCode(currentText, codeAnswer);
+            targetCell.model.setText(updated);
+            if (typeof targetCell.refresh === "function") targetCell.refresh();
+          }
+        }
+
+        // Jalankan semua cell secara otomatis setelah seluruh kode terisi
+        await sleep(500);
+        if (typeof nb.runAll === "function") {
+          nb.runAll();
+        } else {
+          document.querySelector('[command="runall"]')?.click();
+        }
+        return;
+      }
+
+      // 2. Fallback via Monaco Editor models (bekerja langsung di isolated content script)
       const models = typeof window.monaco !== "undefined" ? window.monaco.editor.getModels() : [];
-      const cells = Array.from(document.querySelectorAll(".cell"));
-      
-      // Filter model Monaco yang merupakan code cell soal (dimulai dari model 13 dst)
-      const targetModels = models.filter(m => {
-        const v = m.getValue();
-        return (v.includes("# CODE HERE") || v.includes("<...>")) && !m.uri.toString().endsWith("/1") && !m.uri.toString().endsWith("/9");
-      });
+      const targetModels = models
+        .filter(m => !m.uri.toString().endsWith("/1") && !m.uri.toString().endsWith("/9"))
+        .filter(m => {
+          const v = m.getValue();
+          return v.includes("# CODE HERE") || v.includes("<...>") || v.includes("# ...");
+        })
+        .sort((a, b) => parseInt(a.uri.toString().split("/").pop() || "0", 10) - parseInt(b.uri.toString().split("/").pop() || "0", 10));
+
+      const editors = typeof window.monaco !== "undefined" ? window.monaco.editor.getEditors() : [];
 
       for (let i = 0; i < answers.length; i++) {
         const ans = answers[i];
         let codeAnswer = (typeof ans.jawaban === "string" ? ans.jawaban : "").trim();
         codeAnswer = codeAnswer.replace(/^```[a-zA-Z]*\n?/, "").replace(/\n?```$/, "").trim();
-        if (!codeAnswer) continue;
+        if (!codeAnswer || codeAnswer === "TERPISAH") continue;
 
-        // 1. Isi via Monaco model yang berurutan
-        const m = targetModels[i];
+        const m = (ans?.cellId && targetModels.find(mod => mod.uri.toString().includes(ans.cellId))) || targetModels[i];
         if (m) {
           const val = m.getValue();
-          let newVal = val.includes("<...>") ? val.replace("<...>", codeAnswer) : val + "\n" + codeAnswer;
+          const newVal = replaceCode(val, codeAnswer);
           m.setValue(newVal);
-        }
-
-        // 2. Trigger Run Button di cell yang bersesuaian
-        const targetCell = exerciseCells[i];
-        if (targetCell) {
-          targetCell.scrollIntoView({ behavior: "smooth", block: "center" });
-          await sleep(200);
-          const runBtn = targetCell.querySelector("colab-run-button, .cell-execution-container, [aria-label*='Run']");
-          if (runBtn) {
-            runBtn.click();
-            await sleep(500);
-          }
+          const ed = editors.find(e => e.getModel() === m);
+          if (ed) ed.render();
         }
       }
+
+      // Trigger Run All via Colab Command Menu only if cells were modified
+      if (targetModels.length > 0) {
+        await sleep(500);
+        document.querySelector('[command="runall"]')?.click();
+      }
     }
+  }
+
+  // Fallback for scripting.executeScript Channel 2
+  window.__prelabFill = function(answers) {
+    fillNotebookAnswers(answers);
+  };
+
+  // Channel 3: Storage fallback listener
+  if (typeof chrome !== "undefined" && chrome.storage?.onChanged) {
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === "local" && changes.prelab_answers_pending?.newValue) {
+        const data = changes.prelab_answers_pending.newValue;
+        if (data?.answers) {
+          fillNotebookAnswers(data.answers);
+          chrome.storage.local.remove("prelab_answers_pending");
+        }
+      }
+    });
   }
 
   // ─── Chrome Runtime Listener ─────────────────────────────────────────────────

@@ -1,0 +1,66 @@
+### 1. Duplikasi Kode (Double Injection) pada Cell yang Berhasil Terisi                                                
+                                                                                                                         
+  • Gejala pada Gambar:                                                                                                  
+      • Cell Membaca Dataset: Baris data = pd.read_csv(...) tertulis 2 kali.                                             
+      • Cell Melihat 5 baris awal: data.head() tertulis 2 kali.                                                          
+      • Cell Melihat dimensi dataset: data.shape tertulis 2 kali.                                                        
+      • Cell Melihat kolom dataset: data.columns tertulis 2 kali.                                                        
+      • Cell Periksa data null: data.isnull().sum() tertulis 2 kali.                                                     
+      • Cell Histogram, Box Plot, Penjelasan, dan Describe: Seluruh blok kode & teks terduplikasi persis 2 kali.         
+  • Akar Masalah Teknis:                                                                                                 
+      • Terjadi race condition eksekusi ganda antara Channel 1 (pengiriman pesan ke notebook-content.js) dan Channel 2   
+      (chrome.scripting.executeScript ke MAIN world Colab) yang berjalan bersamaan.                                      
+      • Ketika Channel 1 sudah mengganti placeholder <...>, Channel 2 yang mengeksekusi cell yang sama tidak lagi        
+      menemukan placeholder <...>. Logika fallback lama yang mengeksekusi text + "\n" + cleanAns langsung menempelkan    
+      kode jawaban sekali lagi di bawahnya.                                                                              
+                                                                                                                         
+  ──────                                                                                                                 
+  ### 2. Runtime Error NameError: name 'strength' is not defined (Cell Cetak Mean)                                       
+                                                                                                                         
+  • Gejala pada Gambar:                                                                                                  
+      • Pada cell "Cetak nilai rata rata kekuatan semen pada dataset", muncul pesan error merah:                         
+        Traceback (most recent call last)                                                                                
+        ----> 3 strength                                                                                                 
+        NameError: name 'strength' is not defined                                                                        
+                                                                                                                         
+  • Akar Masalah Teknis:                                                                                                 
+      • Kode bawaan di notebook untuk cell ini sebenarnya sudah lengkap:                                                 
+      print("Nilai mean dari kolom strength:", data['strength'].mean()) dan tidak memiliki placeholder <...>.            
+      • Namun, AI menghasilkan jawaban terpisah berisi teks "strength".                                                  
+      • Karena tidak ada <...> untuk digantikan, fallback lama menempelkan kata strength sebagai baris baru di akhir cell.
+      • Saat fitur Run All dijalankan Colab, Python menganggap strength sebagai variabel mandiri yang belum              
+      dideklarasikan, sehingga eksekusi notebook terhenti total (crash) di cell ini dan tidak melanjutkan ke cell-cell di
+      bawahnya.                                                                                                          
+                                                                                                                         
+  ──────                                                                                                                 
+  ### 3. Soal Bagian Bawah (Cell 11 hingga 17) Tidak Terisi Sama Sekali (Masih <...>)                                    
+                                                                                                                         
+  • Gejala pada Gambar:                                                                                                  
+  Mulai dari bagian Relationship Between Variables soal kedua hingga Hypothesis Testing, seluruh cell masih berupa       
+  template kosong:                                                                                                       
+      • Cell pairplot (cement, slag, age, strength) → masih # CODE HERE \n <...>                                         
+      • Cell heatmap korelasi seaborn → masih # CODE HERE \n <...>                                                       
+      • Cell perbandingan covariance → masih # CODE HERE \n <...>                                                        
+      • Cell Pearson correlation → masih # CODE HERE \n <...>                                                            
+      • Cell Spearman rank correlation → masih # CODE HERE \n <...>                                                      
+      • Cell pengujian hipotesis (T-test) → masih # CODE HERE \n <...>                                                   
+  • Akar Masalah Teknis:                                                                                                 
+      1. Truncation Respon AI (Batas Output Web Mode):                                                                   
+      Ketika 17 soal coding dikirim sekaligus dalam satu prompt besar, AI (Gemini Web) menghasilkan analisis CoT yang    
+      sangat panjang terlebih dahulu. AI berhenti/memotong output setelah soal ke-10 atau ke-11, sehingga array JSON yang
+      diterima hanya berisi 11 elemen (answers.length === 11). Soal ke-12 s/d 17 tidak memiliki pasangan jawaban.        
+      2. Pergeseran Indeks Pemetaan Cell (Index Shifting):
+      Karena pemetaan cell sebagian masih bergantung pada urutan array sequential (exerciseCells[i]), adanya cell yang   
+      tidak memiliki <...> (seperti cell Cetak Mean) menyebabkan indeks jawaban berikutnya bergeser (off-by-one) dari    
+      cell aslinya.
+  
+  ──────
+  ### Ringkasan Titik Kesalahan
+  
+   No │ Lokasi Kesalahan       │ Jenis Masalah                           │ Dampak Langsung
+  ────┼────────────────────────┼─────────────────────────────────────────┼───────────────────────────────────────────────
+   1  │ Seluruh cell awal      │ Duplikasi baris kode (double injection) │ Kode tidak rapi, output dieksekusi 2 kali
+      │ (1–10)                 │                                         │
+   2  │ Cell Cetak Nilai Mean  │ Injeksi kata strength tanpa konteks     │ NameError yang memutus proses Run All Colab
+   3  │ Cell 11 sampai 17      │ Tidak terisi sama sekali (masih <...>)  │ Tugas praktikum bagian korelasi & hipotesis
+      │                        │                                         │ tidak terjawab

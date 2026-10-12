@@ -3,7 +3,11 @@
 (function () {
   "use strict";
 
+  if (window.__uglabInjector) return; // executeScript fallback must not stack a 2nd copy next to the manifest one
+  window.__uglabInjector = true;
+
   let isProcessing = false;
+  let currentRequestId = null; // dedupe GEMINI_READY vs PRELAB_DO_WORK on the same request
 
   function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
@@ -25,7 +29,7 @@
 ${extraPrompt ? `Instruksi Tambahan dari Pengguna: ${extraPrompt}\n\n` : ""}
 === PROSES WAJIB (CHAIN OF THOUGHT) ===
 Tuliskan SELURUH langkah penyelesaian di dalam tag <ANALISIS>...</ANALISIS> SEBELUM menulis JSON.
-TIDAK BOLEH lewati <ANALISIS> — bahkan untuk soal pilihan ganda sekalipun. Akurasi lebih penting dari kecepatan.
+TIDAK BOLEH lewati <ANALISIS> — bahkan untuk soal pilihan ganda sekalipun. Akurasi lebih penting dari kecepatan. Pengecualian: untuk soal coding/notebook, isi <ANALISIS> maksimal 1 baris per soal agar seluruh JSON muat dalam satu respons.
 
 Format output:
 <ANALISIS>
@@ -55,6 +59,11 @@ Soal-soal yang perlu dijawab:
 
 `;
 
+    if (questions.some(q => q.globalContext)) {
+      const gCtx = questions.find(q => q.globalContext)?.globalContext || "";
+      prompt += `=== PETUNJUK & INFORMASI MODUL NOTEBOOK ===\n${gCtx}\n\n`;
+    }
+
     questions.forEach((q, i) => {
       const typeName = typeMap[q.type] || q.type;
       prompt += `--- Soal ${i + 1} (index: ${q.index}, tipe: ${typeName}) ---\n`;
@@ -67,8 +76,13 @@ Soal-soal yang perlu dijawab:
         });
       }
 
-      if (q.type === "coding") {
-        prompt += "(Berikan kode lengkap yang dapat dijalankan)\n";
+      const isNotebook = /\[(Konteks Modul|Kode Soal)\]|<[.\s]*\.\.\.[.\s]*>|#\s*CODE\s*HERE|#\s*\.\.\./i.test(q.text) || Boolean(q.rawCode);
+      if (q.type === "coding" || isNotebook) {
+        if (isNotebook) {
+          prompt += "(PENTING - NOTEBOOK: Tulis kode Python yang valid dan siap dieksekusi. Jika ada placeholder <...> di dalam ekspresi seperti data['<...>'].mean(), jawab HANYA nama kolom (contoh: 'strength') tanpa menduplikasi fungsi luarnya. Jika sel berisi blok kode, tulis seluruh blok kodenya secara bersih tanpa komentar placeholder.)\n";
+        } else {
+          prompt += "(Berikan kode lengkap yang dapat dijalankan)\n";
+        }
       }
 
       if (q.images && q.images.length > 0) {
@@ -126,6 +140,13 @@ DETEKSI JEBAKAN:
 - True/False: kata "selalu/semua/tidak pernah/pasti" hampir selalu SALAH. Cari kontraeksempel.
 - Pilihan Ganda: eliminasi yang jelas salah, lalu hitung/verifikasi sisanya.
 - Perbandingan angka: hitung digit ribuan/desimal dengan sangat teliti.
+
+KHUSUS PYTHON / GOOGLE COLAB / JUPYTER NOTEBOOK:
+- BACA CERMAT PETUNJUK & MODUL: Jika modul menyediakan URL dataset (misal raw.githubusercontent.com/.../concrete.csv), WAJIB gunakan URL tersebut pada pd.read_csv(url), jangan mengarang nama file lokal.
+- Selesaikan seluruh placeholder ('<...>', "<...>", <...>, '# ...') menjadi kode Python yang valid. Jangan tinggalkan karakter '<...>' sama sekali.
+- Jika placeholder ada di dalam indexing kolom data['<...>'].mean(), jawab HANYA nama kolom yang benar (contoh: 'strength' atau strength), jangan membungkusnya ulang dengan print(...) atau data[...].
+- Untuk sel penjelasan boxplot/visualisasi (tanda '# ...'), berikan penjelasan yang ringkas dan relevan.
+- KHUSUS NOTEBOOK: Tulis kode Python yang valid LANGSUNG di dalam properti "jawaban" pada JSON array (contoh: "jawaban": "data.head()", "jawaban": "'strength'"). JANGAN menulis "TERPISAH"!
 `;
 
     prompt += `\nInstruksi Format Keluaran:
@@ -133,10 +154,7 @@ DETEKSI JEBAKAN:
 2. UNTUK OPSI GANDA BIASA (Radio): Tulis teks jawaban di "jawaban", dan isi "index_pilihan" dengan angka urutannya (0, 1, 2...).
 3. UNTUK CHECKBOX MULTIPLE-CHOICE (Pilih Satu atau Lebih): Isi "index_pilihan" berupa ARRAY dari angka index pilihan yang benar (contoh: [0, 2, 3]). Jangan gunakan angka tunggal!
 4. UNTUK ISIAN BANYAK KOTAK (multifill): Anda akan menjumpai teks penanda [KOTAK KOSONG 0], [KOTAK KOSONG 1], dan seterusnya pada teks soal. Evaluasi/hitung jawaban untuk masing-masing posisi tersebut berdasarkan konteks kalimat di sekitarnya, lalu kembalikan hasilnya pada field "jawaban" berupa ARRAY of string berurutan. WAJIB mengembalikan array dari teks hasil akhirnya secara harfiah (LITERAL) tanpa menyebutkan label kotaknya lagi! Contoh: "jawaban": ["2", "2.54648", "2", "2.66666..."]
-5. UNTUK ESSAY ATAU CODING: JANGAN tulis jawaban panjang di dalam JSON! Di dalam JSON, set "jawaban": "TERPISAH". 
-   Lalu, tepat di LUAR JSON, tuliskan JAWABAN LENGKAP (untuk essay) atau KODE (untuk coding) diapit oleh penanda ===JAWABAN_N=== dan ===AKHIR_JAWABAN_N=== (tanpa markdown backticks).
-   - KHUSUS ESSAY: Jawaban HARUS SINGKAT, PADAT, DAN CEPAT (maks. 1-2 paragraf komprehensif) tanpa basa-basi.
-   - KHUSUS CODING: Tuliskan HANYA MURNI KODE yang dapat dijalankan tanpa penjelasan tambahan.
+5. UNTUK ESSAY PANJANG (LMS): Set "jawaban": "TERPISAH", lalu tulis di luar JSON diapit ===JAWABAN_N===. UNTUK CODING NOTEBOOK: Tulis kode langsung di properti "jawaban" di dalam JSON (contoh: "jawaban": "data.head()"), DILARANG menulis "TERPISAH".
 6. UNTUK SOAL DROP DOWN / MATCHING: Jika tersedia "Pilihan" atau "Pilihan untuk setiap kotak", maka isi "jawaban" berupa ARRAY of string yang berisi teks PILIHAN YANG DIPILIH secara harfiah (LITERAL). Jangan mengubah teks pilihan tersebut (termasuk simbol Rp, titik, koma, dsb).
 Contoh:
 \`\`\`json
@@ -218,16 +236,16 @@ Integrasi nasional sangat penting bagi negara baru berkembang karena dapat menya
     const { questions = [], extraPrompt = "", requestId = "manual" } = payload;
     try {
       const allInputSelectors = [
-        "div[aria-label='Konteks chat'][contenteditable='true']",
-        "div[aria-label='Chat context'][contenteditable='true']",
-        "div[contenteditable='true'].ql-editor",
-        "rich-textarea .ql-editor",
-        "rich-textarea [contenteditable=true]",
-        ".ql-editor[contenteditable=true]",
-        "p[data-placeholder]",
         "#prompt-textarea",
-        "[data-testid='chat-input']",
-        ".ProseMirror[contenteditable='true']"
+        "rich-textarea [contenteditable]",
+        "rich-textarea .ql-editor",
+        "[data-testid='prompt-textarea']",
+        "textarea#prompt-textarea",
+        ".ProseMirror[contenteditable='true']",
+        "div[contenteditable='true'][role='textbox']",
+        "div[contenteditable='true']",
+        "p[data-placeholder]",
+        "[data-testid='chat-input']"
       ];
 
       const inputEl = await new Promise((resolve, reject) => {
@@ -248,7 +266,7 @@ Integrasi nasional sangat penting bagi negara baru berkembang karena dapat menya
         obs.observe(document.body, { childList: true, subtree: true });
         setTimeout(() => {
           obs.disconnect();
-          reject(new Error("Gagal menemukan kotak input Gemini (UI mungkin berubah/belum login)."));
+          reject(new Error("Gagal menemukan kotak input web AI."));
         }, 12000);
       });
 
@@ -265,90 +283,37 @@ Integrasi nasional sangat penting bagi negara baru berkembang karena dapat menya
             await navigator.clipboard.write([item]);
             inputEl.focus();
             document.execCommand("paste");
-            await sleep(800); // Tunggu upload selesai
+            await sleep(400); // Tunggu upload selesai
           } catch (e) {
             console.error("[UGLab] Gagal paste gambar:", e);
           }
         }
       }
 
-      // ── Clear and inject text ────────────────────────────────────────────────
+      // ── Clear and inject text (Fast & Framework-Safe) ─────────────────────────
       inputEl.focus();
-      await sleep(100);
-
-      document.execCommand("selectAll", false, null);
-      document.execCommand("delete", false, null);
-      await sleep(50);
-
-      // Method 1: Real Clipboard Paste (Sangat ampuh & Anti-Blokir untuk ProseMirror/Claude)
-      let injected = false;
-      try {
-        await navigator.clipboard.writeText(promptText);
-        inputEl.focus();
-        document.execCommand("paste");
-        await sleep(300);
-        injected = !!inputEl.innerText.trim();
-      } catch (e) {
-        console.warn("[UGLab] Clipboard Paste gagal:", e);
-      }
-
-      // Method 2: Fallback insertText
-      if (!injected) {
+      if (inputEl.tagName === "TEXTAREA" || inputEl.tagName === "INPUT") {
+        inputEl.value = promptText;
+        inputEl.dispatchEvent(new Event("input", { bubbles: true }));
+        inputEl.dispatchEvent(new Event("change", { bubbles: true }));
+      } else {
+        const sel = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(inputEl);
+        sel.removeAllRanges();
+        sel.addRange(range);
         const inserted = document.execCommand("insertText", false, promptText);
         if (!inserted || !inputEl.innerText.trim()) {
-          // Jika semua gagal, paksa ubah HTML internalnya (meski berisiko state ProseMirror rusak)
-          if (inputEl.querySelector("p")) {
-            inputEl.querySelector("p").innerText = promptText;
-          } else {
-            inputEl.innerText = promptText;
-          }
+          const p = inputEl.querySelector("p") || inputEl;
+          p.textContent = promptText;
         }
+        inputEl.dispatchEvent(new InputEvent("input", { bubbles: true, cancelable: true, inputType: "insertText", data: promptText }));
       }
-
-      // Trigger all possible events to enable the Send button (Reactive UI)
-      ["input", "change", "keyup", "keydown"].forEach(evtName => {
-        inputEl.dispatchEvent(new Event(evtName, { bubbles: true }));
-      });
-      
-      await sleep(500);
-
-      // ── Find and click send button ───────────────────────────────────────────
-      let sendBtn = null;
-      for (let i = 0; i < 20; i++) {
-        const candidates = [
-          document.querySelector("button[jsname='FBnT4']"), // Specific Google/Gemini Send Button
-          document.querySelector("button[aria-label*='Kirim pesan']"),
-          document.querySelector("button[aria-label*='Send message']"),
-          document.querySelector(".send-button-container button"),
-          ...Array.from(document.querySelectorAll("button")).filter(b => {
-             const label = (b.getAttribute("aria-label") || "").toLowerCase();
-             const isSend = label.includes("send") || label.includes("kirim");
-             if (!isSend) return false;
-             
-             // ANTI-MISCLICK: Hindari tombol yang berada di top-left (biasanya Menu)
-             const rect = b.getBoundingClientRect();
-             if (rect.top < 100 && rect.left < 100) return false;
-             
-             return true;
-          })
-        ].filter(b => b && !b.disabled && b.getAttribute("aria-disabled") !== "true");
-
-        if (candidates.length) { 
-          sendBtn = candidates[0]; 
-          break; 
-        }
-        
-        // Trigger manual input events to wake up the Send button
-        inputEl.dispatchEvent(new Event('input', { bubbles: true }));
-        inputEl.dispatchEvent(new Event('change', { bubbles: true }));
-        await sleep(400);
-      }
-
-      if (!sendBtn) throw new Error("Tombol send tidak ditemukan atau masih terkunci.");
+      ["input", "change", "keyup"].forEach(evtName => inputEl.dispatchEvent(new Event(evtName, { bubbles: true })));
 
       // Find the number of existing responses BEFORE sending to correctly detect the NEW response stream
       const getResponseEls = () => {
-        for (const sel of ["model-response", "[data-message-author-role='assistant']", ".message.model", ".prose", ".font-claude-message"]) {
+        for (const sel of ["model-response", "[data-message-author-role='assistant']", ".message.model", ".prose", ".font-claude-message", "[class*='MarkdownRoot']", "[class*='ResponseRoot']"]) {
           const els = document.querySelectorAll(sel);
           if (els.length > 0) return Array.from(els);
         }
@@ -356,8 +321,42 @@ Integrasi nasional sangat penting bagi negara baru berkembang karena dapat menya
       };
       const initialResponseCount = getResponseEls().length;
 
-      sendBtn.click();
-      console.log("[UGLab] Send button clicked, waiting for response. Initial count:", initialResponseCount);
+      // ── Find and click send button (Quick Poll < 500ms) ───────────────────────
+      let sendBtn = null;
+      for (let i = 0; i < 5; i++) {
+        const candidates = [
+          document.querySelector("button[data-testid='send-button']"),
+          document.querySelector("button[data-testid='fruitjuice-send-button']"),
+          document.querySelector("button.send-button"),
+          document.querySelector("button[jsname='FBnT4']"),
+          document.querySelector("button[aria-label*='Send' i]"),
+          document.querySelector("button[aria-label*='Kirim' i]"),
+          document.querySelector(".send-button-container button"),
+          ...Array.from(document.querySelectorAll("button")).filter(b => {
+             const label = (b.getAttribute("aria-label") || "").toLowerCase();
+             if (!label.includes("send") && !label.includes("kirim")) return false;
+             const rect = b.getBoundingClientRect();
+             return rect.top >= 100 || rect.left >= 100;
+          })
+        ].filter(b => b && !b.disabled && b.getAttribute("aria-disabled") !== "true" && !b.classList.contains("stop") && !/stop|hentikan/i.test(b.getAttribute("aria-label") || ""));
+
+        if (candidates.length) { 
+          sendBtn = candidates[0]; 
+          break; 
+        }
+        inputEl.dispatchEvent(new InputEvent("input", { bubbles: true, cancelable: true, inputType: "insertText", data: promptText }));
+        await sleep(100);
+      }
+
+      try { sessionStorage.setItem("uglab_sent", requestId); } catch { } // page may reload after send (ChatGPT /c/local-*): resume instead of re-sending
+      if (sendBtn) {
+        sendBtn.click();
+        console.log("[UGLab] Send button clicked, waiting for response. Initial count:", initialResponseCount);
+      } else {
+        // Fallback: Submit via Enter keypress
+        inputEl.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", code: "Enter", keyCode: 13, which: 13, bubbles: true, cancelable: true }));
+        console.log("[UGLab] Enter key dispatched, waiting for response. Initial count:", initialResponseCount);
+      }
 
       // ── Wait for AI to respond + extract ─────────────────────────────────
       await waitAndExtractResponse(requestId, questions.length, payload.lmsTabId, initialResponseCount);
@@ -382,6 +381,8 @@ Integrasi nasional sangat penting bagi negara baru berkembang karena dapat menya
       "ms-text-chunk",
       "model-response .markdown",
       // ChatGPT
+      "[class*='MarkdownRoot']",
+      "[class*='ResponseRoot']",
       ".markdown",
       ".prose",
       "[data-message-author-role='assistant']",
@@ -393,7 +394,7 @@ Integrasi nasional sangat penting bagi negara baru berkembang karena dapat menya
 
     for (const sel of selectors) {
       const els = Array.from(document.querySelectorAll(sel))
-        .filter(el => (el.innerText || "").trim().length > 10);
+        .filter(el => (el.innerText || el.textContent || "").trim().length > 10);
       if (els.length) {
         return els[els.length - 1]; // last = most recent
       }
@@ -407,7 +408,7 @@ Integrasi nasional sangat penting bagi negara baru berkembang karena dapat menya
   // seconds. This is completely agnostic to Gemini's internal DOM structure.
   async function waitAndExtractResponse(requestId, questionCount, lmsTabId, initialCount) {
     const getResponseCount = () => {
-      for (const sel of ["model-response", "[data-message-author-role='assistant']", ".message.model", ".prose", ".font-claude-message"]) {
+      for (const sel of ["model-response", "[data-message-author-role='assistant']", ".message.model", ".prose", ".font-claude-message", "[class*='MarkdownRoot']", "[class*='ResponseRoot']"]) {
         const els = document.querySelectorAll(sel);
         if (els.length > 0) return els.length;
       }
@@ -418,7 +419,7 @@ Integrasi nasional sangat penting bagi negara baru berkembang karena dapat menya
     const phase1Deadline = Date.now() + 30000;
     while (Date.now() < phase1Deadline) {
       const stopBtn = document.querySelector(
-        "button[aria-label='Stop generating'], button[aria-label='Hentikan pembuatan'], button[aria-label='Stop responding'], button[data-testid='stop-button']"
+        "button[aria-label='Stop generating'], button[aria-label='Hentikan pembuatan'], button[aria-label='Stop responding'], button[data-testid='stop-button'], button[aria-label='Stop'], button[aria-label='Stop streaming']"
       );
       if (stopBtn) break; // streaming started
 
@@ -426,48 +427,50 @@ Integrasi nasional sangat penting bagi negara baru berkembang karena dapat menya
         break; // new response container appeared!
       }
 
-      await sleep(700);
+      await sleep(300);
     }
 
     console.log("[UGLab] Response started, waiting for stability...");
 
     // Phase 2 — wait for streaming to STOP (text-length stable for 3 rounds)
-    const phase2Deadline = Date.now() + 120000;
+    const phase2Deadline = Date.now() + 360000;
     let lastLen = 0;
     let stableRounds = 0;
 
     while (Date.now() < phase2Deadline) {
       const el = findBestResponseElement();
-      const currentLen = el?.innerText?.length ?? 0;
+      const currentText = el ? (el.innerText && el.innerText.length > 50 ? el.innerText : (el.textContent || "")) : "";
+      const currentLen = currentText.length;
 
       const stopBtn = document.querySelector(
-        "button[aria-label='Stop generating'], button[aria-label='Hentikan pembuatan'], button[aria-label='Stop responding'], button[data-testid='stop-button']"
+        "button[aria-label='Stop generating'], button[aria-label='Hentikan pembuatan'], button[aria-label='Stop responding'], button[data-testid='stop-button'], button[aria-label='Stop'], button[aria-label='Stop streaming']"
       );
 
       // Aggressive Early Exit Strategy (MAXIMUM SPEED)
       // Check if we can parse the JSON and all required closing tags exist
       if (currentLen > 50) {
-         const tempAnswers = parseAnswersFromText(el?.innerText || "", questionCount);
-         if (tempAnswers && tempAnswers.length > 0) {
+         const tempAnswers = parseAnswersFromText(currentText, questionCount);
+         if (tempAnswers && tempAnswers.length >= questionCount) {
             let allTagsSatisfied = true;
+            // an opened ===JAWABAN_N=== must be closed by ===AKHIR_JAWABAN_N=== (page text, since the prompt echo is balanced) or the code is still streaming
+            const bt = document.body.innerText;
+            if ((bt.match(/AKHIR_JAWABAN/g) || []).length < (bt.match(/={2,3}\s*JAWABAN[\s_-]*\d+/g) || []).length) allTagsSatisfied = false;
             for (const ans of tempAnswers) {
-               if (ans.type === "coding" || ans.type === "essay" || ans.jawaban === "TERPISAH") {
-                  if (!(el?.innerText || "").includes(`===AKHIR_JAWABAN_${ans.index}===`)) {
-                     allTagsSatisfied = false;
-                     break;
-                  }
-               }
+              if (ans.jawaban === "TERPISAH") {
+                allTagsSatisfied = false;
+                break;
+              }
             }
-            if (allTagsSatisfied) {
+            if (allTagsSatisfied && !stopBtn) { // never read a reply that is still streaming (code blocks get cut mid-line)
                console.log("[UGLab] Valid JSON and all texts found! Aggressive early exit!");
                break;
             }
          }
       }
 
-      if (currentLen > 0 && currentLen === lastLen) {
+      if (currentLen > 150 && currentLen === lastLen) {
         stableRounds++;
-        if (stableRounds >= 4 || (stableRounds >= 3 && !stopBtn)) {
+        if (stableRounds >= 20 && !stopBtn) { // ~7s grace: early exit above already handles a complete JSON, so this only fires on a stalled/truncated reply
           console.log("[UGLab] Text stable — streaming complete.");
           break;
         }
@@ -475,10 +478,10 @@ Integrasi nasional sangat penting bagi negara baru berkembang karena dapat menya
         stableRounds = 0;
       }
       lastLen = currentLen;
-      await sleep(800);
+      await sleep(350);
     }
 
-    await sleep(800); // final render buffer
+    await sleep(200); // final render buffer
     await extractAndRelayResponse(requestId, questionCount, lmsTabId);
   }
 
@@ -487,7 +490,8 @@ Integrasi nasional sangat penting bagi negara baru berkembang karena dapat menya
     // ── Strategy A: targeted element selectors (last element wins) ────────────
     const responseSelectors = [
       "model-response", "message-content", "ms-text-chunk",
-      "model-response .markdown", ".markdown", ".prose",
+      "model-response .markdown", "[class*='MarkdownRoot']", "[class*='ResponseRoot']",
+      ".markdown", ".prose",
       "[data-message-author-role='assistant']",
       "[data-message-id]", ".message.model",
     ];
@@ -496,9 +500,10 @@ Integrasi nasional sangat penting bagi negara baru berkembang karena dapat menya
 
     for (const sel of responseSelectors) {
       const els = Array.from(document.querySelectorAll(sel))
-        .filter(el => (el.innerText || "").trim().length > 10);
+        .filter(el => (el.innerText || el.textContent || "").trim().length > 10);
       if (els.length) {
-        rawText = els[els.length - 1].innerText || "";
+        const lastEl = els[els.length - 1];
+        rawText = (lastEl.innerText && lastEl.innerText.length > 50) ? lastEl.innerText : (lastEl.textContent || "");
         console.log("[UGLab] Got text via selector:", sel, "| length:", rawText.length);
         break;
       }
@@ -556,7 +561,7 @@ Integrasi nasional sangat penting bagi negara baru berkembang karena dapat menya
     // ── Deliver raw text to background for parsing & delivery ──────────────────
     chrome.runtime.sendMessage({ 
       type: "GEMINI_DONE", 
-      data: { text: rawText, requestId } 
+      data: { text: rawText, requestId, answers } 
     });
 
     // Provide feedback on the Gemini page
@@ -609,15 +614,29 @@ Integrasi nasional sangat penting bagi negara baru berkembang karena dapat menya
     ];
 
     let parsedArray = null;
-    for (const pattern of patterns) {
-      const match = searchArea.match(pattern) || text.match(pattern);
-      if (match) {
-        let parsed = attemptParse(match[1]);
-        if (!parsed) parsed = attemptParse(fixInvalidJson(match[1]));
-
+    const jsonStart = searchArea.search(/\[\s*\{[\s\S]*?"index"\s*:/);
+    if (jsonStart !== -1) {
+      const jsonEnd = searchArea.lastIndexOf("]");
+      if (jsonEnd > jsonStart) {
+        const slice = searchArea.slice(jsonStart, jsonEnd + 1);
+        let parsed = attemptParse(slice) || attemptParse(fixInvalidJson(slice));
         if (Array.isArray(parsed) && parsed.length > 0) {
           parsedArray = parsed;
-          break;
+        }
+      }
+    }
+
+    if (!parsedArray) {
+      for (const pattern of patterns) {
+        const match = searchArea.match(pattern) || text.match(pattern);
+        if (match) {
+          let parsed = attemptParse(match[1]);
+          if (!parsed) parsed = attemptParse(fixInvalidJson(match[1]));
+
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            parsedArray = parsed;
+            break;
+          }
         }
       }
     }
@@ -635,15 +654,21 @@ Integrasi nasional sangat penting bagi negara baru berkembang karena dapat menya
 
     // Secondary parsing: Extract Out-of-Bounds text block strings and sew them back
     if (parsedArray) {
+      const hasZero = /(?:={2,3}|#{1,3}|\*\*|\b)\s*JAWABAN[\s_-]*0\b/i.test(text);
       parsedArray.forEach(ans => {
         if (ans.type === "coding" || ans.type === "essay" || ans.jawaban === "TERPISAH") {
-          const tagRegex = new RegExp(`===JAWABAN_${ans.index}===([\\s\\S]*?)===AKHIR_JAWABAN_${ans.index}===`, "i");
-          const externalMatch = text.match(tagRegex);
-          if (externalMatch) {
-            let rawText = externalMatch[1].trim();
-            // Just in case AI still wraps it in markdown backticks
+          const targetNum = hasZero ? ans.index : ans.index + 1;
+          const re = new RegExp(
+            `(?:={2,3}|#{1,3}|\\*\\*)?\\s*JAWABAN[\\s_-]*${targetNum}\\s*(?:={2,3}|\\*\\*|:)?\\s*\\n?([\\s\\S]*?)(?=(?:={2,3}|#{1,3}|\\*\\*)?\\s*(?:AKHIR_JAWABAN|JAWABAN)[\\s_-]*\\d*|$)`,
+            "i"
+          );
+          const externalMatch = text.match(re);
+          if (externalMatch && externalMatch[1]?.trim()) {
+            let rawText = externalMatch[1].trim().replace(/^={2,3}\s*AKHIR_JAWABAN[\s_-]*\d*\s*={2,3}/i, "").trim();
             rawText = rawText.replace(/^```[a-zA-Z]*\n?/, "").replace(/\n?```$/, "").trim();
-            ans.jawaban = rawText;
+            if (rawText && rawText !== "TERPISAH") {
+              ans.jawaban = rawText;
+            }
           }
         }
       });
@@ -661,8 +686,10 @@ Integrasi nasional sangat penting bagi negara baru berkembang karena dapat menya
       const res = await chrome.runtime.sendMessage({ type: "GEMINI_READY" });
       if (res?.payload && !isProcessing) {
         isProcessing = true;
+        currentRequestId = res.payload.requestId;
         showGeminiOverlay("⚡ UGLab sedang memproses soal...");
-        await injectToWebEngine(res.payload);
+        if (res.payload.requestId === sessionStorage.getItem("uglab_sent")) await waitAndExtractResponse(res.payload.requestId, res.payload.questions.length, res.payload.lmsTabId, 0);
+        else await injectToWebEngine(res.payload);
         isProcessing = false;
         hideGeminiOverlay();
       }
@@ -673,6 +700,7 @@ Integrasi nasional sangat penting bagi negara baru berkembang karena dapat menya
   // Background sends only the requestId (NOT the full payload with images) for speed.
   // We fetch the payload from chrome.storage.local ourselves.
   async function doWorkWithRequestId(requestId) {
+    if (isProcessing && currentRequestId === requestId) return;
     // Force reset isProcessing — stale state from a previous run must never block a new request
     if (isProcessing) {
       console.warn("[UGLab] Forcing reset of isProcessing for new request:", requestId);
@@ -687,6 +715,7 @@ Integrasi nasional sangat penting bagi negara baru berkembang karena dapat menya
         return;
       }
       isProcessing = true;
+      currentRequestId = requestId;
       showGeminiOverlay("⚡ UGLab sedang memproses soal...");
       await injectToWebEngine(payload);
     } catch (e) {

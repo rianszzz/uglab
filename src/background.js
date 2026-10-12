@@ -50,6 +50,28 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     handleStart(msg, sendResponse);
     return true; // keep channel open
   }
+  if (msg.type === "PRELAB_ACE") { // flush editor values into data-raw-code, or set one editor (code + container id)
+    chrome.scripting.executeScript({
+      target: { tabId: sender.tab.id },
+      world: "MAIN",
+      args: [msg.id || null, msg.code ?? null],
+      func: (id, code) => {
+        const ed = el => (el.env && el.env.editor) || (window.ace && window.ace.edit(el));
+        if (id && code !== null) {
+          const el = document.getElementById(id)?.querySelector(".ace_editor");
+          if (el) ed(el).setValue(code, 1);
+          else document.getElementById(id)?.querySelector(".CodeMirror")?.CodeMirror?.setValue(code);
+          return;
+        }
+        document.querySelectorAll(".ace_editor, .CodeMirror").forEach(el => {
+          const val = el.CodeMirror ? el.CodeMirror.getValue() : ed(el).getValue();
+          el.setAttribute("data-raw-code", val);
+          if (!el.hasAttribute("data-prelab-original")) el.setAttribute("data-prelab-original", val);
+        });
+      },
+    }).then(() => sendResponse({ ok: true })).catch(() => sendResponse({ ok: false }));
+    return true;
+  }
   if (msg.type === "PRELAB_STATUS") {
     broadcastToLMS(msg.data);
     sendResponse({ ok: true });
@@ -100,22 +122,33 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 });
 
+let _lastDoneId = null; // two injector copies in one tab both send GEMINI_DONE; handle one so the next batch (new tab) isn't chained twice
 async function handleGeminiDone(data) {
   const { text, requestId } = data;
+  if (requestId && requestId === _lastDoneId) return;
+  _lastDoneId = requestId;
   const meta = await chrome.storage.local.get("prelab_pending_meta");
-  const { lmsTabId, questionCount } = meta.prelab_pending_meta || {};
+  let { lmsTabId, questionCount, rest, webEngine } = meta.prelab_pending_meta || {};
+  const { prelab_pending_payload: pl } = await chrome.storage.local.get("prelab_pending_payload");
 
   if (!lmsTabId) return;
 
   try {
-    const answers = parseAnswersFromText(text, questionCount);
+    const answers = (Array.isArray(data?.answers) && data.answers.length > 0) ? data.answers : parseAnswersFromText(text, questionCount);
     if (!answers) throw new Error("Gagal parse jawaban dari Web Engine.");
+    // AI often echoes batch-local numbers ("Soal 1") instead of q.index: remap by position, then re-queue unanswered
+    const ids = (pl?.questions || []).map(q => q.index);
+    if (answers.length === ids.length && answers.some(a => !ids.includes(a.index))) answers.forEach((a, j) => { if (ids[j] !== undefined) a.index = ids[j]; });
+    const miss = (pl?.questions || []).filter(q => !answers.some(a => a.index === q.index));
+    if (miss.length < ids.length) rest = [...miss, ...(rest || [])]; // ponytail: retries only while a batch makes progress
     await deliverAnswersToLMS(lmsTabId, answers);
     broadcastToLMS({ status: "success", text: "✅ Web Engine Berhasil!" });
   } catch (err) {
     chrome.tabs.sendMessage(lmsTabId, { type: "PRELAB_ERROR", error: err.message }).catch(() => { });
   } finally {
     await chrome.storage.local.remove(["prelab_pending_payload", "prelab_pending_meta"]);
+    // 600ms: GEMINI_DONE closes the engine tab at 500ms; chain after it so the next batch gets a fresh tab
+    if (rest?.length) setTimeout(() => handleStart({ lmsTabId, mode: "web", webEngine, extraPrompt: pl?.extraPrompt, rest }, () => { }), 600);
   }
 }
 
@@ -125,6 +158,7 @@ function handleGeminiError(error) {
     if (lmsTabId) {
       chrome.tabs.sendMessage(lmsTabId, { type: "PRELAB_ERROR", error: `Web Engine Error: ${error}` }).catch(() => { });
     }
+    chrome.storage.local.remove(["prelab_pending_payload", "prelab_pending_meta"]);
   });
 }
 
@@ -133,7 +167,7 @@ async function handleStart(msg, sendResponse) {
   const { extraPrompt, lmsTabId } = msg;
 
   const stored = await chrome.storage.local.get("prelab_questions_cache");
-  const questions = stored.prelab_questions_cache;
+  const questions = msg.rest || stored.prelab_questions_cache;
   if (!questions || questions.length === 0) {
     sendResponse({ ok: false, error: "Soal belum di-scan. Klik Scan Ulang Soal terlebih dahulu." });
     return;
@@ -159,30 +193,55 @@ async function handleStart(msg, sendResponse) {
         const isClaude = webEngine === "claude";
         const engineName = isChatGPT ? "ChatGPT Web" : isClaude ? "Claude Web" : "Gemini Web";
         const engineUrlMatch = isChatGPT ? "*://chatgpt.com/*" : isClaude ? "*://claude.ai/*" : "*://gemini.google.com/*";
-        const engineUrlBase = isChatGPT ? "https://chatgpt.com/" : isClaude ? "https://claude.ai/new" : "https://gemini.google.com/";
+        const engineUrlBase = isChatGPT ? "https://chatgpt.com/" : isClaude ? "https://claude.ai/new" : "https://gemini.google.com/app";
 
         notify(`Menyiapkan payload untuk ${engineName}...`, "loading");
-        const promptText = buildPrompt(questions, extraPrompt);
+        const BATCH = Infinity; // ponytail: one prompt = one tab = one injection; truncated tail is re-queued by handleGeminiDone, lower to batch only if parse fails
+        const rest = questions.slice(BATCH);
+        const batch = questions.slice(0, BATCH);
+        const promptText = buildPrompt(batch, extraPrompt);
         const requestId = Date.now().toString();
 
         await chrome.storage.local.set({
           prelab_pending_payload: { 
-            questions, 
+            questions: batch, 
             extraPrompt, 
-            images: questions.flatMap(q => q.images || []),
+            images: batch.flatMap(q => q.images || []),
             requestId
           },
-          prelab_pending_meta: { lmsTabId, requestId, questionCount: questions.length }
+          prelab_pending_meta: { lmsTabId, requestId, questionCount: batch.length, rest, webEngine }
         });
+
+        const sendWork = (tabId) => {
+          chrome.tabs.sendMessage(tabId, { type: "PRELAB_DO_WORK", requestId }, (res) => {
+            if (chrome.runtime.lastError || !res?.ok) {
+              chrome.scripting.executeScript({
+                target: { tabId },
+                files: ["src/ai-injector.js"]
+              }).then(() => {
+                chrome.tabs.sendMessage(tabId, { type: "PRELAB_DO_WORK", requestId });
+              }).catch(() => { });
+            }
+          });
+        };
 
         // Cari apakah tab Engine sudah buka
         const tabs = await chrome.tabs.query({ url: engineUrlMatch });
         if (tabs.length > 0) {
-          await chrome.tabs.update(tabs[0].id, { active: true });
-          // Kirim perintah langsung ke content script di tab tersebut
-          chrome.tabs.sendMessage(tabs[0].id, { type: "PRELAB_DO_WORK", requestId }).catch(() => { });
+          const targetTab = tabs[0];
+          await chrome.tabs.update(targetTab.id, { active: true });
+          if (targetTab.windowId) await chrome.windows.update(targetTab.windowId, { focused: true }).catch(() => { });
+          sendWork(targetTab.id);
         } else {
-          await chrome.tabs.create({ url: engineUrlBase });
+          const newTab = await chrome.tabs.create({ url: engineUrlBase, active: true });
+          if (newTab.windowId) await chrome.windows.update(newTab.windowId, { focused: true }).catch(() => { });
+          const onUpdated = (tabId, info) => {
+            if (tabId === newTab.id && info.status === "complete") {
+              chrome.tabs.onUpdated.removeListener(onUpdated);
+              sendWork(newTab.id);
+            }
+          };
+          chrome.tabs.onUpdated.addListener(onUpdated);
         }
         return; // Flow web selesai di sini, ai-injector yang akan lapor balik
       }
@@ -381,6 +440,11 @@ Field:
 
 `;
 
+  if (questions.some(q => q.globalContext)) {
+    const gCtx = questions.find(q => q.globalContext)?.globalContext || "";
+    prompt += `=== PETUNJUK & INFORMASI MODUL NOTEBOOK ===\n${gCtx}\n\n`;
+  }
+
   questions.forEach((q, i) => {
     const typeName = typeMap[q.type] || q.type;
     prompt += `--- Soal ${i + 1} (index: ${q.index}, tipe: ${typeName}) ---\n`;
@@ -393,10 +457,14 @@ Field:
       });
     }
 
-    // Deteksi method-only: berlaku untuk type "coding" MAUPUN stale cache (shortanswer, dll)
+    // Deteksi method-only (Java) dan Notebook (Colab/Jupyter)
     const isMethodOnly = /hanya\s*tulis\s*(definisi\s*)?method|only\s*write.*method|jangan\s*tulis\s*program\s*lengkap|method\s*only|tulis\s*definisi\s*method|jangan\s*ubah\s*kode|tuliskan\s*(sebuah\s*)?method/i.test(q.text);
-    if (q.type === "coding" || isMethodOnly) {
-      if (isMethodOnly) {
+    const isNotebook = /\[(Konteks Modul|Kode Soal)\]|<[.\s]*\.\.\.[.\s]*>|#\s*CODE\s*HERE|#\s*\.\.\./i.test(q.text) || Boolean(q.rawCode);
+
+    if (q.type === "coding" || isMethodOnly || isNotebook) {
+      if (isNotebook) {
+        prompt += "(PENTING - NOTEBOOK: Tulis kode Python yang valid langsung di field \"jawaban\" dalam JSON, JANGAN gunakan \"TERPISAH\". Jika ada placeholder <...> di dalam ekspresi seperti data['<...>'].mean(), jawab HANYA nama kolom (contoh: 'strength') tanpa menduplikasi fungsi luarnya. Jika sel berisi blok kode, tulis seluruh blok kodenya secara bersih tanpa komentar placeholder.)\n";
+      } else if (isMethodOnly) {
         prompt += "(PENTING: Tulis HANYA satu atau beberapa definisi method yang diminta. Template sudah disertakan — JANGAN tulis ulang class, import, atau method main(). Output hanya method signature + body saja, mulai dari access modifier. Gunakan indentasi 4 spasi standar Java di dalam method body. TIDAK ADA komentar atau penjelasan di dalam kode.)\n";
       } else {
         prompt += "(Berikan kode lengkap yang dapat dijalankan. TIDAK ADA penjelasan di dalam blok kode.)\n";
@@ -458,7 +526,7 @@ FORMAT JAWABAN KHUSUS:
 3. ISIAN BANYAK KOTAK (multifill): "jawaban" = ARRAY of string untuk setiap kotak secara berurutan. Contoh: ["2", "6.5", "3"]. 
    - PENTING: Panjang array WAJIB sama dengan jumlah [KOTAK KOSONG N] pada teks soal! Jangan melewatkan satupun kotak.
 4. ESSAY: "jawaban" = "TERPISAH", lalu tulis jawaban di luar JSON dalam tag ===JAWABAN_N=== ... ===AKHIR_JAWABAN_N===.
-5. CODING: "jawaban" = "TERPISAH", lalu tulis KODE MURNI (tanpa penjelasan, tanpa markdown) di ===JAWABAN_N=== ... ===AKHIR_JAWABAN_N===.
+5. CODING: Untuk notebook (Colab/Jupyter), tulis kode langsung di dalam properti "jawaban" di JSON. Untuk soal coding panjang di iLab LMS, baru gunakan "jawaban" = "TERPISAH".
 6. DROPDOWN/MATCHING: "jawaban" = ARRAY of string teks pilihan secara LITERAL sesuai opsi.
 
 PRESISI WAJIB:
@@ -470,8 +538,15 @@ PRESISI WAJIB:
 KHUSUS ISIAN KODE MULTIFILL (PEMROGRAMAN):
 - Jika kotak kosong bertujuan untuk mengisi suatu statement/baris kode utuh (seperti deklarasi, perulangan, atau assignment variabel), WAJIB gunakan sintaks sempurna.
 - JANGAN LUPA tambahkan titik-koma (;) di akhir pernyataan jika itu adalah bahasa seperti C, C++, atau Java, KECUALI titik-koma tersebut sudah tercetak secara eksplisit di luar boks.
-- Perhatikan karakter yang mencetak di luar boks (misal jika \`)\` sudah ada di luar boks, jangan ditulis ulang di dalam boks). Sintaks harus menyatu utuh dengan lingkungan sekitarnya.
+- Perhatikan karakter yang mencetak di luar boks (misal jika ')' sudah ada di luar boks, jangan ditulis ulang di dalam boks). Sintaks harus menyatu utuh dengan lingkungan sekitarnya.
 - PERHATIAN: Periksa indeks [KOTAK KOSONG N] dengan hati-hati. Kotak pertama biasanya adalah KONDISI (misal 'y == 10'), lalu kotak berikutnya adalah ISI STATEMENT. Jangan sampai isi statement tertukar ke kotak kondisi! Penuhi seluruh array dari indeks 0 hingga habis.
+
+KHUSUS PYTHON / GOOGLE COLAB / JUPYTER NOTEBOOK:
+- BACA CERMAT PETUNJUK & MODUL: Jika modul menyediakan URL dataset (misal raw.githubusercontent.com/.../concrete.csv), WAJIB gunakan URL tersebut pada pd.read_csv(url), jangan mengarang nama file lokal.
+- Selesaikan seluruh placeholder ('<...>', "<...>", <...>, '# ...') menjadi kode Python yang valid. Jangan tinggalkan karakter '<...>' sama sekali.
+- Jika placeholder ada di dalam indexing kolom data['<...>'].mean(), jawab HANYA nama kolom yang benar (contoh: 'strength' atau strength), jangan membungkusnya ulang dengan print(...) atau data[...].
+- Untuk sel penjelasan boxplot/visualisasi (tanda '# ...'), berikan penjelasan yang ringkas dan relevan.
+- KHUSUS NOTEBOOK: Tulis kode Python yang valid LANGSUNG di dalam properti "jawaban" pada JSON array (contoh: "jawaban": "data.head()", "jawaban": "'strength'"). JANGAN menulis "TERPISAH"!
 
 KHUSUS PEMROGRAMAN BERBASIS OBJEK (JAVA/OOP):
 - Perhatikan relasi antar class (Inheritance). Jika diminta membuat subclass (misal: class Lingkaran extends Bangun), pastikan penamaan class dan keyword 'extends' tertulis dengan benar.
@@ -563,11 +638,23 @@ function parseAnswersFromText(text, questionCount) {
   ];
 
   let parsedArray = null;
-  for (const pattern of patterns) {
-    const match = searchArea.match(pattern) || text.match(pattern);
-    if (match) {
-      let parsed = attemptParse(match[1]) ?? attemptParse(fixInvalidJson(match[1]));
-      if (Array.isArray(parsed) && parsed.length > 0) { parsedArray = parsed; break; }
+  const jsonStart = searchArea.search(/\[\s*\{[\s\S]*?"index"\s*:/);
+  if (jsonStart !== -1) {
+    const jsonEnd = searchArea.lastIndexOf("]");
+    if (jsonEnd > jsonStart) {
+      const slice = searchArea.slice(jsonStart, jsonEnd + 1);
+      let parsed = attemptParse(slice) ?? attemptParse(fixInvalidJson(slice));
+      if (Array.isArray(parsed) && parsed.length > 0) parsedArray = parsed;
+    }
+  }
+
+  if (!parsedArray) {
+    for (const pattern of patterns) {
+      const match = searchArea.match(pattern) || text.match(pattern);
+      if (match) {
+        let parsed = attemptParse(match[1]) ?? attemptParse(fixInvalidJson(match[1]));
+        if (Array.isArray(parsed) && parsed.length > 0) { parsedArray = parsed; break; }
+      }
     }
   }
 
@@ -580,16 +667,21 @@ function parseAnswersFromText(text, questionCount) {
   }
 
   if (parsedArray) {
+    const hasZero = /(?:={2,3}|#{1,3}|\*\*|\b)\s*JAWABAN[\s_-]*0\b/i.test(text);
     parsedArray.forEach(ans => {
       if (ans.type === "coding" || ans.type === "essay" || ans.jawaban === "TERPISAH") {
-        const tagRegex = new RegExp(
-          `===JAWABAN_${ans.index}===([\\s\\S]*?)===AKHIR_JAWABAN_${ans.index}===`, "i"
+        const targetNum = hasZero ? ans.index : ans.index + 1;
+        const re = new RegExp(
+          `(?:={2,3}|#{1,3}|\\*\\*)?\\s*JAWABAN[\\s_-]*${targetNum}\\s*(?:={2,3}|\\*\\*|:)?\\s*\\n?([\\s\\S]*?)(?=(?:={2,3}|#{1,3}|\\*\\*)?\\s*(?:AKHIR_JAWABAN|JAWABAN)[\\s_-]*\\d*|$)`,
+          "i"
         );
-        const externalMatch = text.match(tagRegex);
-        if (externalMatch) {
-          let raw = externalMatch[1].trim();
+        const externalMatch = text.match(re);
+        if (externalMatch && externalMatch[1]?.trim()) {
+          let raw = externalMatch[1].trim().replace(/^={2,3}\s*AKHIR_JAWABAN[\s_-]*\d*\s*={2,3}/i, "").trim();
           raw = raw.replace(/^```[a-zA-Z]*\n?/, "").replace(/\n?```$/, "").trim();
-          ans.jawaban = raw;
+          if (raw && raw !== "TERPISAH") {
+            ans.jawaban = raw;
+          }
         }
       }
     });
@@ -603,29 +695,166 @@ function parseAnswersFromText(text, questionCount) {
 async function deliverAnswersToLMS(lmsTabId, answers) {
   let delivered = false;
 
+  // Enrich answers with cellId from questions cache to prevent off-by-one shifts
+  const cache = await chrome.storage.local.get("prelab_questions_cache");
+  const questions = cache.prelab_questions_cache || [];
+  const mappedAnswers = answers.map((ans, idx) => {
+    const q = questions.find(item => item.index === ans.index) || questions[idx];
+    return { ...ans, cellId: ans.cellId || q?.cellId };
+  });
+
   // Channel 1: Direct message
   try {
-    await chrome.tabs.sendMessage(lmsTabId, { type: "PRELAB_ANSWERS", answers });
+    await chrome.tabs.sendMessage(lmsTabId, { type: "PRELAB_ANSWERS", answers: mappedAnswers });
     delivered = true;
   } catch { }
 
-  // Channel 2: scripting.executeScript — ONLY if Channel 1 failed (prevents double handleAnswers call)
-  if (!delivered) {
-    try {
-      await chrome.scripting.executeScript({
-        target: { tabId: lmsTabId },
-        func: (answersJson) => {
-          if (typeof window.__prelabFill === "function") {
-            window.__prelabFill(answersJson);
-          } else {
-            window.__prelabPendingAnswers = answersJson;
+  // Channel 2: scripting.executeScript (Direct Colab/Jupyter MAIN world model sync & runAll)
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId: lmsTabId },
+      world: "MAIN",
+      args: [mappedAnswers],
+      func: (answersJson) => {
+        const replaceCode = (text, ans) => {
+          const cleanAns = ans.trim();
+          if (!cleanAns || cleanAns === "TERPISAH") return text;
+          const trimmedText = text.trim();
+          if (!trimmedText || trimmedText === "# CODE HERE") return cleanAns;
+
+          const lines = text.split("\n");
+          const pIdx = lines.findIndex(l => l.includes("<...>") || l.includes("# ...") || l.trim() === "TERPISAH");
+          if (pIdx !== -1) {
+            const line = lines[pIdx].trim();
+            const isFull = cleanAns.includes("print(") || cleanAns.includes("=") || cleanAns.includes("\n") ||
+              /\.\w+\(/.test(cleanAns) || /^['"]?<...>['"]?;?$/.test(line) || line === "# ..." || line === "TERPISAH";
+            if (isFull) {
+              lines[pIdx] = line === "# ..." ? cleanAns.split("\n").map(l => l.startsWith("#") ? l : "# " + l).join("\n") : cleanAns; // explanation cells must stay comments
+              return lines.join("\n");
+            }
           }
-        },
-        args: [answers],
-      });
-      delivered = true;
-    } catch { }
-  }
+
+          if (text.includes("'<...>'") || text.includes("'TERPISAH'")) {
+            const p = text.includes("'<...>'") ? "'<...>'" : "'TERPISAH'";
+            return text.replace(p, /^['"].*['"]$/.test(cleanAns) ? cleanAns : `'${cleanAns}'`);
+          }
+          if (text.includes('"<...>"') || text.includes('"TERPISAH"')) {
+            const p = text.includes('"<...>"') ? '"<...>"' : '"TERPISAH"';
+            return text.replace(p, /^['"].*['"]$/.test(cleanAns) ? cleanAns : `"${cleanAns}"`);
+          }
+          if (text.includes("<...>")) {
+            return text.replace(/<[.\s]*\.\.\.[.\s]*>/g, () => cleanAns);
+          }
+          if (text.includes("# ...")) {
+            return text.replace(/^([ \t]*)#\s*\.\.\.\s*$/m, (m, indent) => {
+              return cleanAns.split("\n").map((l, i) => i === 0 ? indent + l : indent + l).join("\n");
+            });
+          }
+          return text;
+        };
+
+        const cleanAns = (ans) => {
+          let code = (typeof ans?.jawaban === "string" ? ans.jawaban : "").trim();
+          if (code === "TERPISAH") return "";
+          return code.replace(/^```[a-zA-Z]*\n?/, "").replace(/\n?```$/, "").trim();
+        };
+
+        // 1. Google Colab
+        const nb = window.colab?.global?.notebook;
+        if (nb && Array.isArray(nb.cells)) {
+          const exerciseCells = nb.cells.filter(c => {
+            if (!c.model || c.model.type !== "code") return false;
+            const t = c.model.getText() || "";
+            return t.includes("# CODE HERE") || t.includes("<...>") || t.includes("# ...");
+          });
+
+          for (let i = 0; i < answersJson.length; i++) {
+            const ansObj = answersJson[i];
+            const code = cleanAns(ansObj);
+            const cell = (ansObj?.cellId && nb.cells.find(c => c.cellId === ansObj.cellId || c.id === ansObj.cellId)) || exerciseCells[i];
+            if (code && cell) {
+              const cur = (typeof cell.getText === "function" ? cell.getText() : cell.model?.getText()) || "";
+              const updated = replaceCode(cur, code);
+              if (typeof cell.setText === "function") cell.setText(updated);
+              else if (typeof cell.model?.setText === "function") cell.model.setText(updated);
+              if (cell.model?.textModel) cell.model.textModel.setValue(updated);
+            }
+          }
+
+          setTimeout(() => {
+            if (typeof nb.runAll === "function") nb.runAll();
+            else document.querySelector('[command="runall"]')?.click();
+          }, 500);
+          return;
+        }
+
+        // 2. Jupyter Classic (window.Jupyter)
+        if (typeof window.Jupyter !== "undefined" && window.Jupyter.notebook?.get_cells) {
+          const jCells = window.Jupyter.notebook.get_cells().filter(c => {
+            if (c.cell_type !== "code") return false;
+            const t = c.get_text() || "";
+            return t.includes("# CODE HERE") || t.includes("<...>") || t.includes("# ...");
+          });
+
+          for (let i = 0; i < answersJson.length; i++) {
+            const code = cleanAns(answersJson[i]);
+            const c = jCells[i];
+            if (code && c) {
+              const cur = c.get_text() || "";
+              c.set_text(replaceCode(cur, code));
+            }
+          }
+
+          setTimeout(() => {
+            if (typeof window.Jupyter.notebook.execute_all_cells === "function") {
+              window.Jupyter.notebook.execute_all_cells();
+            }
+          }, 500);
+          return;
+        }
+
+        // 3. JupyterLab / Modern Jupyter / try-jupyter (CodeMirror 6 / DOM)
+        const jpCodeCells = Array.from(document.querySelectorAll('.jp-CodeCell, .jp-Cell'));
+        const jpTargets = [];
+        jpCodeCells.forEach(cell => {
+          const cm = cell.querySelector('.cm-content');
+          const view = cm?.cmView?.view;
+          const doc = view ? view.state.doc.toString() : (cm?.innerText || "");
+          if (doc.includes("# CODE HERE") || doc.includes("<...>") || doc.includes("# ...")) {
+            jpTargets.push({ cell, cm, view, doc });
+          }
+        });
+
+        if (jpTargets.length > 0) {
+          for (let i = 0; i < answersJson.length; i++) {
+            const code = cleanAns(answersJson[i]);
+            const target = jpTargets[i];
+            if (code && target) {
+              const cur = target.view ? target.view.state.doc.toString() : target.doc;
+              const updated = replaceCode(cur, code);
+              if (target.view) {
+                target.view.dispatch({
+                  changes: { from: 0, to: target.view.state.doc.length, insert: updated }
+                });
+              } else if (target.cm) {
+                target.cm.innerText = updated;
+              }
+            }
+          }
+
+          setTimeout(() => {
+            const runBtn = document.querySelector('[data-command="notebook:restart-run-all"]') ||
+                           document.querySelector('[data-command="notebook:run-all-cells"]') ||
+                           document.querySelector('[data-command="runmenu:run-all"]');
+            if (runBtn) runBtn.click();
+          }, 500);
+          return;
+        }
+      },
+      args: [mappedAnswers],
+    });
+    delivered = true;
+  } catch { }
 
   // Channel 3: Storage fallback (content script listening via storage.onChanged)
   if (!delivered) {

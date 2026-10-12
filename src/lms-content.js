@@ -410,39 +410,8 @@
   async function scrapeQuestions() {
     // Flush Ace/CodeMirror Virtual DOM values into a physical DOM attribute 
     // This allows the isolated extension to extract massive code templates accurately even if scroll-hidden
-    const flushScript = document.createElement("script");
-    flushScript.textContent = `
-      (function() {
-        try {
-          document.querySelectorAll(".ace_editor").forEach(el => {
-             const val = (el.env && el.env.editor)
-               ? el.env.editor.getValue()
-               : (window.ace ? window.ace.edit(el).getValue() : null);
-             if (val !== null) {
-               el.setAttribute("data-raw-code", val);
-               // data-prelab-original: simpan template asli hanya sekali per page load.
-               // Tidak ditimpa pada scan ulang — dipakai fillCoding sebagai base yang bersih.
-               if (!el.hasAttribute("data-prelab-original")) {
-                 el.setAttribute("data-prelab-original", val);
-               }
-             }
-          });
-          document.querySelectorAll(".CodeMirror").forEach(el => {
-             const val = el.CodeMirror
-               ? el.CodeMirror.getValue()
-               : (el._cmView && el._cmView.state && el._cmView.state.doc ? el._cmView.state.doc.toString() : null);
-             if (val !== null) {
-               el.setAttribute("data-raw-code", val);
-               if (!el.hasAttribute("data-prelab-original")) {
-                 el.setAttribute("data-prelab-original", val);
-               }
-             }
-          });
-        } catch(e){}
-      })();
-    `;
-    document.documentElement.appendChild(flushScript);
-    flushScript.remove(); // Execute synchronously and clean up
+    // inline <script> is blocked by the site CSP, so the MAIN-world read goes through the background (chrome.scripting)
+    await chrome.runtime.sendMessage({ type: "PRELAB_ACE" }).catch(() => { });
 
     const questions = [];
     const selectors = [
@@ -935,73 +904,9 @@
 
     const finalCode = buildFinalCode(originalTemplate, codeStr) ?? codeStr;
 
-    // Injected script: HANYA set value.
-    // Ace diakses via: el.env.editor → window.ace → RequireJS registry (Moodle AMD).
-    const script = document.createElement("script");
-    script.textContent = `
-      (function() {
-        try {
-          const container = document.getElementById("${container.id}");
-          if (!container) return;
-          const finalCode = ${JSON.stringify(finalCode)};
-
-          // Cari Ace editor via beberapa metode (termasuk RequireJS AMD untuk Moodle)
-          function getAceEditor(aceEl) {
-            if (aceEl.env && aceEl.env.editor) return aceEl.env.editor;
-            if (window.ace && window.ace.edit) {
-              try { return window.ace.edit(aceEl); } catch(e) {}
-            }
-            // RequireJS internal registry — Moodle load Ace via AMD, tidak expose window.ace
-            try {
-              var def = window.require && window.require.s
-                        && window.require.s.contexts && window.require.s.contexts._
-                        && window.require.s.contexts._.defined;
-              if (def) {
-                var aceModule = def["qtype_coderunner/ace/ace"] || def["ace/ace"] || def["ace"];
-                if (aceModule && aceModule.edit) return aceModule.edit(aceEl);
-              }
-            } catch(e) {}
-            return null;
-          }
-
-          // 1. Ace Editor
-          const aceEl = container.querySelector(".ace_editor");
-          if (aceEl) {
-            const editor = getAceEditor(aceEl);
-            if (editor) {
-              editor.setValue(finalCode, 1);
-              document.dispatchEvent(new CustomEvent("${eventName}"));
-              return;
-            }
-          }
-
-          // 2. CodeMirror v5
-          const cmEl = container.querySelector(".CodeMirror");
-          if (cmEl && cmEl.CodeMirror) {
-            cmEl.CodeMirror.setValue(finalCode);
-            document.dispatchEvent(new CustomEvent("${eventName}"));
-            return;
-          }
-
-          // 3. CodeMirror v6
-          if (cmEl && cmEl._cmView && cmEl._cmView.dispatch) {
-            cmEl._cmView.dispatch({ changes: { from: 0, to: cmEl._cmView.state.doc.length, insert: finalCode } });
-            document.dispatchEvent(new CustomEvent("${eventName}"));
-            return;
-          }
-        } catch (e) {
-          console.error("Prelab fillCoding error:", e);
-        }
-      })();
-    `;
-
-    document.documentElement.appendChild(script);
-    script.remove();
-
-    if (mainWorldSuccess) {
-      highlightFilled(container.querySelector(".CodeMirror") || container.querySelector(".ace_editor") || container);
-      return true;
-    }
+    // Ace/CodeMirror value is set in the MAIN world via background (inline <script> is blocked by the site CSP);
+    // the textarea below is set as well so the submitted value matches even if the editor lags.
+    chrome.runtime.sendMessage({ type: "PRELAB_ACE", id: container.id, code: finalCode }).catch(() => { });
 
     // Fallback: set textarea langsung TANPA dispatch input/change
     // (menghindari CodeRunner's insert behavior yang menyebabkan doubling)
