@@ -3,6 +3,8 @@
 // SF Symbols-style monoline icons (24px grid, rounded caps), coloured by currentColor.
 const ICONS = {
   key: '<circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16 7l3 3M14 9l2 2"/>',
+  coffee: '<path d="M5 9h11v5a5 5 0 01-5 5h-1a5 5 0 01-5-5z"/><path d="M16 10h1.5a2.5 2.5 0 010 5H16M8.5 3.5v2M12 3.5v2"/>',
+  chevron: '<path d="M9.5 5.5l6.5 6.5-6.5 6.5"/>',
   check: '<path d="M5 12.5l4.5 4.5L19 7"/>',
   pencil: '<path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 013 3L8 19z"/><path d="M14.5 6.5l3 3"/>',
   eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',

@@ -432,6 +432,19 @@
     .api-config-wrap.no-anim .creds-pane { transition: none; }
     .creds-saved-msg { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--green); padding-top: 2px; }
 
+    .creds-help { display: none; margin-top: 6px; font-size: 10px; color: var(--text-muted); text-align: center; font-family: 'Space Grotesk', sans-serif; }
+    .api-config-wrap.visible + .creds-help { display: block; }
+
+    /* Support row: Apple HIG style list cell (system font, 12pt continuous corners, hairline border, tap feedback) */
+    .support-row { display: flex; align-items: center; gap: 10px; margin: 12px 18px 0; padding: 10px 12px; border-radius: 12px; background: #D9D2BF; border: 1.5px solid var(--border); color: var(--text); text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; transition: background 0.2s ease, transform 0.12s ease; }
+    .support-row:hover { background: #CFC7B0; }
+    .support-row:active { transform: scale(0.985); }
+    .support-icon { width: 30px; height: 30px; border-radius: 8px; background: #F0EDE4; border: 1.5px solid var(--border); color: var(--text); font-size: 16px; flex-shrink: 0; }
+    .support-text { display: flex; flex-direction: column; flex: 1; line-height: 1.25; }
+    .support-title { font-size: 13px; font-weight: 600; letter-spacing: -0.01em; }
+    .support-sub { font-size: 11px; color: var(--text-muted); }
+    .support-chevron { color: var(--text-muted); font-size: 13px; opacity: 0.7; }
+
     /* SF Symbols-style line icons: 1.7pt rounded stroke that follows the text colour */
     i[data-icon] { display: inline-flex; align-items: center; justify-content: center; }
     .ic { width: 1.2em; height: 1.2em; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
@@ -706,6 +719,7 @@
     /* ── Spinner ── */
     .spin { animation: spinAnim 1s linear infinite; display: inline-block; }
     @keyframes spinAnim { to { transform: rotate(360deg); } }
+
   </style>
 </head>
 
@@ -819,6 +833,8 @@
           </div></div>
         </div>
 
+        <div class="creds-help">Belum ada Credentials? Chat etmin rainszzz</div>
+
         <!-- NEW: Loop Mode Toggle -->
         <div class="mode-option" id="toggle-loop" style="margin-top: 10px; border-color: var(--border);">
             <div class="mode-info" style="flex: 1;">
@@ -842,6 +858,15 @@
     </div>
 
     <div class="divider"></div>
+
+    <a class="support-row" href="support.html" target="_blank" rel="noopener">
+      <i class="support-icon" data-icon="coffee"></i>
+      <span class="support-text">
+        <span class="support-title">Beliin etmin kopi</span>
+        <span class="support-sub">Dukung lewat QRIS</span>
+      </span>
+      <i class="support-chevron" data-icon="chevron"></i>
+    </a>
 
     <!-- Progress -->
     <div class="progress-wrap" id="progressWrap">

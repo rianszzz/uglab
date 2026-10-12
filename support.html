@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Locks this page down: only the bundled QRIS image can load, no scripts, no remote images, no forms or <base> tricks -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; base-uri 'none'; form-action 'none'" />
+  <title>Beliin etmin kopi — UGLab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #E8E4D9;
+      --card: #F0EDE4;
+      --cream-deep: #D9D2BF;
+      --ink: #141414;
+      --muted: #6B6864;
+      --green: #2A6B1A;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 32px 16px;
+      background:
+        radial-gradient(60% 50% at 50% 0%, rgba(42, 107, 26, 0.08), transparent 70%),
+        var(--bg);
+      color: var(--ink);
+      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    main {
+      width: min(420px, 100%);
+      background: var(--card);
+      border: 1.5px solid var(--ink);
+      border-radius: 20px;
+      padding: 32px 28px 24px;
+      text-align: center;
+      box-shadow: 0 2px 0 rgba(20, 20, 20, 0.9), 0 24px 48px -24px rgba(20, 20, 20, 0.35);
+      animation: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) { main { animation: none; } }
+
+    .cup {
+      width: 56px; height: 56px; margin: 0 auto 18px;
+      display: grid; place-items: center;
+      border-radius: 16px;
+      background: var(--cream-deep);
+      border: 1.5px solid var(--ink);
+    }
+    .cup svg { width: 28px; height: 28px; fill: none; stroke: var(--ink); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+
+    h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+    .lead { margin-top: 8px; font-size: 14px; line-height: 1.55; color: var(--muted); }
+
+    .qr {
+      margin: 24px auto 0;
+      padding: 14px;
+      width: min(300px, 100%);
+      background: #fff;
+      border: 1.5px solid var(--ink);
+      border-radius: 16px;
+    }
+    .qr img { display: block; width: 100%; height: auto; border-radius: 6px; }
+
+    .hint {
+      margin-top: 18px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--ink);
+    }
+    .chips { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+    .chips span {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--cream-deep);
+      border: 1px solid rgba(20, 20, 20, 0.35);
+    }
+    footer {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(20, 20, 20, 0.15);
+      font-size: 12px;
+      color: var(--muted);
+    }
+    footer b { color: var(--green); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="cup" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M5 9h11v5a5 5 0 01-5 5h-1a5 5 0 01-5-5z"/><path d="M16 10h1.5a2.5 2.5 0 010 5H16M8.5 3.5v2M12 3.5v2"/></svg>
+    </div>
+
+    <h1>Beliin etmin kopi</h1>
+    <p class="lead">Scan QR ini jika merasa etmin lapar</p>
+
+    <div class="qr">
+      <img src="icons/qris.jpg" alt="Kode QRIS untuk donasi" />
+    </div>
+
+    <p class="hint">Laper Men -etmin</p>
+    <div class="chips" aria-label="Didukung">
+      <span>QRIS</span><span>Semua bank</span><span>E-wallet</span>
+    </div>
+
+    <footer>Terima kasih, semangat praktikumnya. <b>UGLab v2.1.1</b></footer>
+  </main>
+</body>
+</html>
