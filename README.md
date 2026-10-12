@@ -1,4 +1,4 @@
-# ⚡ UGLab — Auto-Jawab Soal Praktikum Gunadarma
+# UGLab 2.1 — Auto-Jawab LMS UG
 
 Auto-jawab soal praktikum iLab & v-class Gunadarma menggunakan AI (Gemini, ChatGPT).
 
