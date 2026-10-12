@@ -15,9 +15,10 @@ const TEXT_MODEL_CHAIN = [
   "DeepSeek-V3.2"
 ];
 
-// SambaNova doesn't support Vision anymore. We fallback to Text model and STRIP images.
+// Llama-3.3-70B is text-only and rejects image_url parts, so image questions need a multimodal model.
+// ponytail: model id unverified against the user's key (none stored when this was written); edit here if SambaNova renames it.
 const VISION_MODEL_CHAIN = [
-  "Meta-Llama-3.3-70B-Instruct"
+  "Llama-4-Maverick-17B-128E-Instruct"
 ];
 
 let currentKeyIndex = 0;
@@ -467,7 +468,7 @@ Field:
       } else if (isMethodOnly) {
         prompt += "(PENTING: Tulis HANYA satu atau beberapa definisi method yang diminta. Template sudah disertakan — JANGAN tulis ulang class, import, atau method main(). Output hanya method signature + body saja, mulai dari access modifier. Gunakan indentasi 4 spasi standar Java di dalam method body. TIDAK ADA komentar atau penjelasan di dalam kode.)\n";
       } else {
-        prompt += "(Berikan kode lengkap yang dapat dijalankan. TIDAK ADA penjelasan di dalam blok kode.)\n";
+        prompt += "(Berikan kode lengkap yang dapat dijalankan. TIDAK ADA penjelasan di dalam blok kode. JANGAN menyalin kode pengujian/contoh pemakaian dari soal; kembalikan HANYA template yang dilengkapi, pengujian ditambahkan otomatis oleh penilai.)\n";
       }
     }
 

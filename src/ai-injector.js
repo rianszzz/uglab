@@ -176,7 +176,7 @@ public class SapaDunia {
 Integrasi nasional sangat penting bagi negara baru berkembang karena dapat menyatukan berbagai elemen bangsa yang memiliki perbedaan suku, agama, dan budaya untuk membentuk satu kesatuan identitas nasional yang utuh.
 ===AKHIR_JAWABAN_1===
 
-7. PENTING: Untuk jawaban tipe CODING, DILARANG KERAS MENAMBAH PENJELASAN ATAU KATA-KATA APAPUN DI DALAM PENANDA ===JAWABAN_N===! HANYA KODE MURNI.
+7. PENTING: Untuk jawaban tipe CODING, DILARANG KERAS MENAMBAH PENJELASAN ATAU KATA-KATA APAPUN DI DALAM PENANDA ===JAWABAN_N===! HANYA KODE MURNI. JANGAN menyalin kode pengujian/contoh pemakaian dari soal (mis. myBag = Bag(), print(...) di luar class/fungsi): kembalikan HANYA template dosen yang sudah dilengkapi, karena kode pengujian ditambahkan otomatis oleh sistem penilai dan output akan terduplikasi.
 
 8. PENTING - SOAL KODING TEMPLATE: Jika soal menautkan [TEMPLATE KODE AWAL DARI DOSEN], Anda WAJIB meniru penempatan contoh riel berikut ini secara persis!
    CONTOH PENGISIAN YANG BENAR:
@@ -278,14 +278,18 @@ Integrasi nasional sangat penting bagi negara baru berkembang karena dapat menya
         console.log(`[UGLab] Menyiapkan ${images.length} gambar untuk dipot...`);
         for (const base64 of images) {
           try {
-            const blob = await (await fetch(`data:image/jpeg;base64,${base64}`)).blob();
-            const item = new ClipboardItem({ "image/png": blob });
-            await navigator.clipboard.write([item]);
+            // clipboard only accepts real PNG: decode whatever format Moodle served (jpeg/webp/gif) and re-encode
+            const bmp = await createImageBitmap(await (await fetch(`data:image/jpeg;base64,${base64}`)).blob());
+            const cv = new OffscreenCanvas(bmp.width, bmp.height);
+            cv.getContext("2d").drawImage(bmp, 0, 0);
+            // synthetic paste carrying the file: navigator.clipboard.write needs a focused document + user gesture (NotAllowedError in a fresh tab)
+            const dt = new DataTransfer();
+            dt.items.add(new File([await cv.convertToBlob({ type: "image/png" })], "soal.png", { type: "image/png" }));
             inputEl.focus();
-            document.execCommand("paste");
+            inputEl.dispatchEvent(new ClipboardEvent("paste", { clipboardData: dt, bubbles: true, cancelable: true }));
             await sleep(400); // Tunggu upload selesai
           } catch (e) {
-            console.error("[UGLab] Gagal paste gambar:", e);
+            console.error("[UGLab] Gagal paste gambar:", e.name, e.message);
           }
         }
       }
@@ -535,6 +539,8 @@ Integrasi nasional sangat penting bagi negara baru berkembang karena dapat menya
     }
 
     // ── Parse JSON from text ──────────────────────────────────────────────────
+    // ChatGPT code blocks put a "Python\nRun" / "Copy code" header inside innerText; it would end up as the first lines of the answer
+    rawText = rawText.replace(/^[A-Za-z+#]{1,12}\n(?:Run\n|Copy code\n|Copy\n)+/gm, "");
     let answers = parseAnswersFromText(rawText, questionCount);
 
     // Retry once with whole page text if still not found

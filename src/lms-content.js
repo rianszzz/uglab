@@ -173,7 +173,7 @@
           
           // NEW: Identify images inside the specific row/item
           const imgsInRow = Array.from(row.querySelectorAll("img")).filter(
-            img => !img.src.includes("icon") && !img.src.includes("spacer")
+            img => !img.src.includes("icon") && !img.src.includes("spacer") && !img.src.includes("/theme/")
           );
           
           if (imgsInRow.length > 0) {
@@ -376,18 +376,19 @@
   // ─── Extract Images ──────────────────────────────────────────────────────────
   async function extractImages(container, specificImgs = null) {
     const imgs = specificImgs || Array.from(container.querySelectorAll("img")).filter(
-      img => !img.src.includes("icon") && !img.src.includes("spacer")
+      img => !img.src.includes("icon") && !img.src.includes("spacer") && !img.src.includes("/theme/")
     );
     const results = [];
     
     // Menggunakan Fetch API untuk mengambil gambar secara langsung agar lebih reliabel dibanding Canvas (mencegah Tainted Canvas)
     for (const img of imgs.slice(0, 4)) {
       try {
-        if (img.src && img.src.startsWith("data:image")) {
-          results.push(img.src.split(",")[1]);
-        } else if (img.src) {
+        const src = img.currentSrc || img.dataset.src || img.src; // lazy-loaded / srcset images leave src empty or a placeholder
+        if (src && src.startsWith("data:image")) {
+          results.push(src.split(",")[1]);
+        } else if (src) {
           // 'include' sangat penting agar Cookie sesi login Gunadarma (pluginfile.php) ikut terkirim
-          const response = await fetch(img.src, { credentials: 'include' });
+          const response = await fetch(src, { credentials: 'include' });
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
           
           const blob = await response.blob();
@@ -447,7 +448,7 @@
       if (typeNeedsImages) {
         let imgsToExtract = data.rowImages ? [...data.rowImages] : [];
         const generalImgs = Array.from(container.querySelectorAll("img")).filter(
-          img => !img.src.includes("icon") && !img.src.includes("spacer") && !imgsToExtract.includes(img)
+          img => !img.src.includes("icon") && !img.src.includes("spacer") && !img.src.includes("/theme/") && !imgsToExtract.includes(img)
         );
         imgsToExtract = [...imgsToExtract, ...generalImgs];
         images = await extractImages(container, imgsToExtract);
