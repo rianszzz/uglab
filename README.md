@@ -115,4 +115,4 @@ Menggunakan antarmuka web AI (Gemini Web, ChatGPT Web, atau Claude Web) secara o
 
 ---
 
-*UGLab v1.0 — Made for Gunadarma Students*
+*UGLab v2.1 — Made for Gunadarma Students*

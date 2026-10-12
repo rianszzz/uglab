@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "UGLab",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Auto-jawab soal praktikum Gunadarma (iLab & v-class) — Hybrid: Ollama llama3 (teks) + Gemini 2.0 Flash (vision)",
   "icons": {
     "16": "icons/icon16.png",
