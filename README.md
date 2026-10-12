@@ -1,4 +1,4 @@
-# UGLab 2.1.1 — Auto-Jawab Soal Praktikum Gunadarma
+# UGLab 2.1.1 — Auto-Jawab Soal LMS UG
 
 Ekstensi Chrome yang membaca soal praktikum di iLab / v-class Gunadarma (Moodle), Google Colab, dan Jupyter, mengirimnya ke AI, lalu mengisi jawabannya otomatis.
 
@@ -137,4 +137,4 @@ Background ── jawaban ──► halaman soal
 
 ---
 
-*UGLab v2.1.1 — Made for Gunadarma Students*
+*UGLab v2.1.1 — Made for UG Students*
