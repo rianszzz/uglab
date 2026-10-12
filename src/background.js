@@ -843,7 +843,8 @@ async function deliverAnswersToLMS(lmsTabId, answers) {
             }
           }
 
-          setTimeout(() => {
+          setTimeout(async () => {
+            await window.__uglabPreflight?.().catch(() => { }); // Pyodide: install missing libs silently before running
             const runBtn = document.querySelector('[data-command="notebook:restart-run-all"]') ||
                            document.querySelector('[data-command="notebook:run-all-cells"]') ||
                            document.querySelector('[data-command="runmenu:run-all"]');

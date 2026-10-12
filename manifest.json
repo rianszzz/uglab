@@ -71,6 +71,16 @@
     },
     {
       "matches": [
+        "https://jupyter.org/*"
+      ],
+      "js": [
+        "src/jupyter-expose.js"
+      ],
+      "world": "MAIN",
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
         "https://gemini.google.com/*",
         "https://chatgpt.com/*",
         "https://claude.ai/*"
