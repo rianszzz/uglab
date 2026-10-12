@@ -1,25 +1,9 @@
-// background.js — UGLab Service Worker (v7 — Multi-Model Chain Fallback)
+// background.js — UGLab Service Worker
 //
-// Routing strategy:
-//   Soal TEKS     → TEXT_MODEL_CHAIN [7 model Groq, sequential 429 fallback]
-//                 → Emergency: Gemini 2.0 Flash
-//   Soal GAMBAR   → VISION_MODEL_CHAIN [4 model Groq, sequential 429 fallback]
-//                 → Emergency: Gemini 2.0 Flash Vision
+// API Mode: any OpenAI-compatible endpoint (chat/completions) with the user's saved endpoint, key and model.
+// Web Mode: relays the prompt to the Gemini / ChatGPT / Claude tab.
 
 // ─── Config ───────────────────────────────────────────────────────────────────
-// SambaNova Configuration
-const GROQ_URL = "https://api.sambanova.ai/v1/chat/completions";
-
-const TEXT_MODEL_CHAIN = [
-  "Meta-Llama-3.3-70B-Instruct", // SambaNova Text
-  "DeepSeek-V3.2"
-];
-
-// Llama-3.3-70B is text-only and rejects image_url parts, so image questions need a multimodal model.
-// ponytail: model id unverified against the user's key (none stored when this was written); edit here if SambaNova renames it.
-const VISION_MODEL_CHAIN = [
-  "Llama-4-Maverick-17B-128E-Instruct"
-];
 
 let currentKeyIndex = 0;
 
@@ -248,47 +232,13 @@ async function handleStart(msg, sendResponse) {
       }
 
       // --- API MODE FLOW ---
-      let rawText = null;
-      let usedEngine = "";
-
-      if (!hasImages) {
-        // --- TEXT FLOW: Sequential model chain ---
-        const modelChain = TEXT_MODEL_CHAIN;
-        let res = { ok: false, error: "Belum dicoba" };
-        for (let i = 0; i < modelChain.length; i++) {
-          notify(`[${i + 1}/${modelChain.length}] Mencoba ${modelChain[i]}...`);
-          res = await callGroqAPI(questions, extraPrompt, modelChain[i]);
-          if (res.ok) break;
-          console.warn(`[UGLab] Model ${modelChain[i]} gagal: ${res.error}`);
-        }
-
-        if (!res.ok) {
-          console.warn("[UGLab] Semua model gagal. Mengembalikan error API.");
-          throw new Error(`SambaNova API Error: ${res.error}`);
-        } else {
-          rawText = res.text;
-          usedEngine = `SambaNova ${res.model}`;
-        }
-      } else {
-        // --- VISION FLOW: Sequential vision model chain ---
-        const visionChain = VISION_MODEL_CHAIN;
-        let res = { ok: false, error: "Belum dicoba" };
-        for (let i = 0; i < visionChain.length; i++) {
-          notify(`[${i + 1}/${visionChain.length}] Vision (Teks-Only): ${visionChain[i]}...`);
-          res = await callGroqAPI(questions, extraPrompt, visionChain[i], true);
-          if (res.ok) break;
-          console.warn(`[UGLab] Model ${visionChain[i]} gagal: ${res.error}`);
-        }
-
-        if (!res.ok) {
-          console.warn("[UGLab] Semua model gagal. Mengembalikan error API.");
-          throw new Error(`SambaNova API Error: ${res.error}`);
-        } else {
-          rawText = res.text;
-          usedEngine = `SambaNova (Vision Stripped) ${res.model}`;
-        }
-      }
-
+      const { prelab_api_model: model } = await chrome.storage.local.get("prelab_api_model");
+      if (!model) throw new Error("Model belum diisi. Isi kolom Model lalu klik Simpan Credentials.");
+      notify(`Mencoba ${model}...`);
+      const res = await callChatAPI(questions, extraPrompt, model, hasImages);
+      if (!res.ok) throw new Error(`API Error: ${res.error}`);
+      const rawText = res.text;
+      const usedEngine = res.model;
 
       console.log("[UGLab] === RAW AI RESPONSE ===\n", rawText);
 
@@ -309,14 +259,14 @@ async function handleStart(msg, sendResponse) {
   })();
 }
 
-// ─── Unified Groq API Call ────────────────────────────────────────────────────
-async function callGroqAPI(questions, extraPrompt, model, isVision = false) {
+// ─── OpenAI-compatible API Call ───────────────────────────────────────────────
+async function callChatAPI(questions, extraPrompt, model, isVision = false) {
   const SYSTEM = "Kamu adalah asisten akademik yang ahli. Jawab soal dengan akurasi 100%. Kembalikan HANYA JSON array di dalam tag ```json.";
   let promptText = buildPrompt(questions, extraPrompt);
   console.log("[UGLab] === PROMPT SENT TO AI ===\n", promptText.slice(0, 3000), "\n...(truncated)");
 
   // Optimasi: Potong prompt jika terlalu panjang (mencegah Context Overflow / Payload Too Large)
-  const MAX_CHARS = isVision ? 60000 : 30000;
+  const MAX_CHARS = isVision ? 120000 : 80000; // was 30000: a 15-question notebook silently lost its last questions
   if (promptText.length > MAX_CHARS) {
     promptText = promptText.slice(0, MAX_CHARS) + "\n\n...[SOAL TERPOTONG]...";
   }
@@ -339,10 +289,15 @@ async function callGroqAPI(questions, extraPrompt, model, isVision = false) {
   }
 
   const apiKeys = await getApiKeys();
-  if (!apiKeys || apiKeys.length === 0) {
+  const { prelab_api_endpoint: endpoint, prelab_creds_saved: saved } = await chrome.storage.local.get(["prelab_api_endpoint", "prelab_creds_saved"]);
+  const u = endpoint && new URL(endpoint);
+  if (saved && u && !await chrome.permissions.contains({ origins: [`${u.protocol}//${u.hostname}/*`] })) {
+    return { ok: false, error: `Izin akses ke ${u.hostname} belum diberikan. Buka popup lalu klik Simpan Credentials dan pilih Allow.` };
+  }
+  if (!saved || !endpoint || apiKeys.length === 0) {
     return {
       ok: false,
-      error: "API Key belum diatur! Buka popup ekstensi dan masukkan API Key SambaNova/Groq Anda."
+      error: "API Mode belum aktif! Buka popup ekstensi, isi endpoint & API Key, lalu klik Simpan Credentials."
     };
   }
 
@@ -351,7 +306,7 @@ async function callGroqAPI(questions, extraPrompt, model, isVision = false) {
     const key = apiKeys[(currentKeyIndex + attempt) % apiKeys.length];
     currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
     try {
-      const resp = await fetch(GROQ_URL, {
+      const resp = await fetch(`${endpoint.replace(/\/+$/, "")}/chat/completions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -374,7 +329,7 @@ async function callGroqAPI(questions, extraPrompt, model, isVision = false) {
 
       if (!resp.ok) {
         const body = await resp.text();
-        return { ok: false, error: `SambaNova ${resp.status} (${model}): ${body.slice(0, 100)}` };
+        return { ok: false, error: `API ${resp.status} (${model}): ${body.slice(0, 100)}` };
       }
 
       const data = await resp.json();
@@ -449,7 +404,8 @@ Field:
   questions.forEach((q, i) => {
     const typeName = typeMap[q.type] || q.type;
     prompt += `--- Soal ${i + 1} (index: ${q.index}, tipe: ${typeName}) ---\n`;
-    prompt += `${q.text}\n`;
+    // the module instructions are already added once above; repeating them in every question blew the prompt past the size cap and cut off the last questions
+    prompt += `${q.text.replace(/^\[Petunjuk & Modul\]:[\s\S]*?\n\n(?=\[Konteks Modul\])/, "")}\n`;
 
     if (q.options && q.options.length) {
       prompt += "Pilihan:\n";
@@ -810,6 +766,23 @@ async function deliverAnswersToLMS(lmsTabId, answers) {
             if (typeof window.Jupyter.notebook.execute_all_cells === "function") {
               window.Jupyter.notebook.execute_all_cells();
             }
+          }, 500);
+          return;
+        }
+
+        // 2b. JupyterLab / Notebook 7 with the app exposed: write through the notebook model so cells outside the viewport
+        //     (no editor in the DOM) are filled too.
+        const jw = window.jupyterapp?.shell?.currentWidget?.content?.widgets;
+        const mTargets = (jw || []).filter(w => w.model.type === "code" && /# CODE HERE|<\.\.\.>|# \.\.\./.test(w.model.sharedModel.getSource()));
+        if (mTargets.length > 0) {
+          for (let i = 0; i < answersJson.length; i++) {
+            const code = cleanAns(answersJson[i]);
+            const target = mTargets[i];
+            if (code && target) target.model.sharedModel.setSource(replaceCode(target.model.sharedModel.getSource(), code));
+          }
+          setTimeout(async () => {
+            await window.__uglabPreflight?.().catch(() => { });
+            await window.jupyterapp.commands.execute("notebook:run-all-cells").catch(() => { });
           }, 500);
           return;
         }

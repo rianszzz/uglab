@@ -993,7 +993,7 @@
     badge.id = "prelab-status";
     badge.innerHTML = `
       <div class="prelab-badge-inner">
-        <span class="prelab-icon">⚡</span>
+        <span class="prelab-icon" style="display:inline-flex"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg></span>
         <span class="prelab-text">UGLab Ready</span>
       </div>
     `;
@@ -1023,11 +1023,13 @@
     return badge;
   }
 
+  // line icons (SF Symbols look) instead of emoji; leading emoji in status strings is stripped at this sink
+  const STATUS_ICONS = { idle: `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>`, loading: `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M12 3a9 9 0 109 9"/></svg>`, success: `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M5 12.5l4.5 4.5L19 7"/></svg>`, error: `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M6 6l12 12M18 6L6 18"/></svg>` };
   function updateStatus(status, text) {
     const badge = document.getElementById("prelab-status") || createStatusBadge();
     badge.className = status;
-    badge.querySelector(".prelab-icon").textContent = status === "loading" ? "⟳" : status === "success" ? "✓" : status === "error" ? "✗" : "⚡";
-    badge.querySelector(".prelab-text").textContent = text;
+    badge.querySelector(".prelab-icon").innerHTML = STATUS_ICONS[status] || STATUS_ICONS.idle;
+    badge.querySelector(".prelab-text").textContent = String(text).replace(/^[^\p{L}\p{N}(]+/u, "");
   }
 
   // ─── Message Listener ─────────────────────────────────────────────────────────

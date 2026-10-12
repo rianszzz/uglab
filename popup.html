@@ -422,6 +422,21 @@
       font-family: 'Space Grotesk', sans-serif;
     }
 
+    /* Credentials box: form <-> saved view, height + opacity animate together (grid 1fr -> 0fr) */
+    .creds-pane { display: grid; grid-template-rows: 1fr; opacity: 1; transition: grid-template-rows 0.35s ease, opacity 0.25s ease; }
+    .creds-pane > div { overflow: hidden; min-height: 0; }
+    #credsSaved { grid-template-rows: 0fr; opacity: 0; pointer-events: none; }
+    .api-config-wrap.creds-saved #credsForm { grid-template-rows: 0fr; opacity: 0; pointer-events: none; }
+    .api-config-wrap.creds-saved #credsSaved { grid-template-rows: 1fr; opacity: 1; pointer-events: auto; }
+    .api-config-wrap.creds-saved .api-key-status { opacity: 0; }
+    .api-config-wrap.no-anim .creds-pane { transition: none; }
+    .creds-saved-msg { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--green); padding-top: 2px; }
+
+    /* SF Symbols-style line icons: 1.7pt rounded stroke that follows the text colour */
+    i[data-icon] { display: inline-flex; align-items: center; justify-content: center; }
+    .ic { width: 1.2em; height: 1.2em; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .btn-key-visibility { gap: 6px; }
+
     /* ── Prompt Textarea — IDLE box style ── */
     .prompt-wrapper { position: relative; }
 
@@ -703,7 +718,7 @@
         <img class="logo-img" src="icons/logo.png" alt="UGLab" />
         <div class="header-sub">iLab · v-class · Gunadarma</div>
       </div>
-      <div class="version-badge">v2.1</div>
+      <div class="version-badge">v2.1.1</div>
     </div>
 
     <!-- Status Bar -->
@@ -714,7 +729,7 @@
 
     <!-- Notice (shown when not on LMS) -->
     <div class="notice" id="notOnLmsNotice" style="display:none">
-      <span class="notice-icon">⚠</span>
+      <i class="notice-icon" data-icon="warning"></i>
       <span>Buka halaman kuis/soal di iLab atau v-class Gunadarma, lalu klik UGLab lagi.</span>
     </div>
 
@@ -750,7 +765,7 @@
           <div class="mode-option" id="mode-api" data-mode="api">
             <div class="mode-info">
               <div class="mode-title">API Mode</div>
-              <div class="mode-sub">Fast (Groq/Gemini API)</div>
+              <div class="mode-sub">Fast (OpenAI-compatible API)</div>
             </div>
           </div>
           <div class="mode-option" id="mode-web" data-mode="web">
@@ -775,16 +790,33 @@
         </div>
 
         <!-- API Mode Key Configuration -->
-        <div class="api-config-wrap" id="apiConfigWrap">
+        <div class="api-config-wrap no-anim" id="apiConfigWrap">
           <div class="api-config-header">
-            <span class="api-config-label">🔑 SambaNova / Groq API Key</span>
-            <span class="api-key-status" id="apiKeyStatus">Belum diisi</span>
+            <span class="api-config-label"><i data-icon="key"></i> API Credentials</span>
+            <span class="api-key-status" id="apiKeyStatus">Belum disimpan</span>
           </div>
-          <div class="api-input-group">
-            <input type="password" id="inputApiKey" class="api-key-input" placeholder="Masukkan SambaNova API Key..." autocomplete="off" />
-            <button type="button" id="btnToggleKeyVisibility" class="btn-key-visibility" title="Tampilkan / Sembunyikan Key">👁️</button>
-          </div>
-          <div class="api-config-hint">Key disimpan secara lokal di browser Anda. Pisahkan dengan koma jika menggunakan beberapa key untuk rotasi.</div>
+          <div class="creds-pane" id="credsForm"><div>
+            <div class="api-input-group">
+              <input type="url" id="inputApiEndpoint" class="api-key-input" placeholder="Endpoint, mis. https://api.zrouter.dev/v1/" autocomplete="off" />
+            </div>
+            <div class="api-input-group" style="margin-top: 6px;">
+              <input type="password" id="inputApiKey" class="api-key-input" placeholder="API Key..." autocomplete="off" />
+              <button type="button" id="btnToggleKeyVisibility" class="btn-key-visibility" title="Tampilkan / Sembunyikan Key"><i data-icon="eye"></i></button>
+            </div>
+            <div class="api-input-group" style="margin-top: 6px;">
+              <input type="text" id="inputApiModel" class="api-key-input" placeholder="Model, mis. gpt-4o-mini" autocomplete="off" />
+            </div>
+            <div class="api-input-group" style="margin-top: 6px;">
+              <button type="button" id="btnSaveCreds" class="btn-key-visibility" style="flex: 1; font-weight: 600; gap: 6px;"><i data-icon="save"></i> Simpan Credentials</button>
+            </div>
+            <div class="api-config-hint">API Mode hanya bisa dipakai setelah credentials disimpan. Disimpan lokal di browser Anda. Pisahkan dengan koma jika memakai beberapa key untuk rotasi.</div>
+          </div></div>
+          <div class="creds-pane" id="credsSaved"><div>
+            <div class="creds-saved-msg"><i data-icon="check"></i> Credentials Tersimpan</div>
+            <div class="api-input-group" style="margin-top: 8px;">
+              <button type="button" id="btnEditCreds" class="btn-key-visibility" style="flex: 1; font-weight: 600; gap: 6px;"><i data-icon="pencil"></i> Ubah Credentials</button>
+            </div>
+          </div></div>
         </div>
 
         <!-- NEW: Loop Mode Toggle -->
@@ -795,10 +827,6 @@
             </div>
             <div class="loop-switch" id="loop-state-indicator" style="width: 10px; height: 10px; border-radius: 50%; background: #444;"></div>
         </div>
-      <div class="ai-engine-badge" id="apiEngineInfo" style="margin-top: 8px;">
-        <span>✦</span>
-        <span id="engineLabel">Groq</span> &middot; <span class="engine-model" id="engineModel">Llama 3.3-70b → 8b → Gemini 2.0</span>
-      </div>
     </div>
 
     <!-- Extra Prompt -->
@@ -831,25 +859,25 @@
     <!-- Actions -->
     <div class="actions">
       <button class="btn-main" id="btnStart" disabled>
-        <span id="btnIcon" class="btn-sparkle">✦</span>
+        <span id="btnIcon" class="btn-sparkle"><i data-icon="sparkle"></i></span>
         <span id="btnText">Mulai Auto-Jawab</span>
-        <span class="btn-sparkle">✦</span>
+        <span class="btn-sparkle"><i data-icon="sparkle"></i></span>
       </button>
       <button class="btn-secondary" id="btnScan">
-        <span>⟳</span>
+        <i data-icon="refresh"></i>
         <span>Scan Ulang Soal</span>
       </button>
       <button class="btn-clear" id="btnClear">
-        <span>✕</span>
+        <i data-icon="xmark"></i>
         <span>Clear Cache &amp; Reset</span>
       </button>
     </div>
 
     <!-- Footer -->
     <div class="footer">
-      <button class="footer-toggle" id="logToggle">✳ Tampilkan Log</button>
+      <button class="footer-toggle" id="logToggle"><i data-icon="list"></i> Tampilkan Log</button>
       <div class="footer-deco">
-        <span>✦</span>
+        <i data-icon="sparkle"></i>
         <span style="font-family:'JetBrains Mono',monospace;font-size:10px;">UGLab</span>
       </div>
     </div>

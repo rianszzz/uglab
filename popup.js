@@ -1,5 +1,23 @@
 // popup.js — UGLab Popup Controller
 
+// SF Symbols-style monoline icons (24px grid, rounded caps), coloured by currentColor.
+const ICONS = {
+  key: '<circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16 7l3 3M14 9l2 2"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7"/>',
+  pencil: '<path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 013 3L8 19z"/><path d="M14.5 6.5l3 3"/>',
+  eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  "eye-off": '<path d="M3 3l18 18M10.6 5.1A9.7 9.7 0 0112 5c6.4 0 10 7 10 7a17 17 0 01-3.2 4M6.6 6.7A16.6 16.6 0 002 12s3.6 7 10 7a9.6 9.6 0 004.2-1M9.9 9.9a3 3 0 004.2 4.2"/>',
+  save: '<path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19h14"/>',
+  sparkle: '<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 16v4M17 18h4"/>',
+  refresh: '<path d="M20 11a8 8 0 10-2.3 5.7"/><path d="M20 4v7h-7"/>',
+  spinner: '<path d="M12 3a9 9 0 109 9"/>',
+  xmark: '<path d="M6 6l12 12M18 6L6 18"/>',
+  warning: '<path d="M12 4l9.5 16h-19z"/><path d="M12 10v4.5M12 17.5v.01"/>',
+  list: '<path d="M9 7h11M9 12h11M9 17h11M4.5 7h.01M4.5 12h.01M4.5 17h.01"/>',
+};
+const icon = (name, cls = "") => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`;
+const hydrateIcons = () => document.querySelectorAll("i[data-icon]").forEach(el => { el.innerHTML = icon(el.dataset.icon); });
+
 const LMS_PATTERNS = [
   "ujian.gunadarma.ac.id",
   "praktikum.gunadarma.ac.id",
@@ -38,6 +56,7 @@ const qTypesContainer = $("qTypesContainer");
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", async () => {
+  hydrateIcons();
   setupListeners();
   await detectCurrentTab();
 });
@@ -68,43 +87,56 @@ function setupListeners() {
   const btnToggleKeyVisibility = $("btnToggleKeyVisibility");
   const apiKeyStatus = $("apiKeyStatus");
 
-  // Load API Key
-  chrome.storage.local.get("prelab_api_keys", (res) => {
-    if (res.prelab_api_keys) {
-      if (inputApiKey) inputApiKey.value = res.prelab_api_keys;
-      if (apiKeyStatus) {
-        apiKeyStatus.textContent = "✓ Tersimpan";
-        apiKeyStatus.classList.add("saved");
-      }
-    } else {
-      if (apiKeyStatus) {
-        apiKeyStatus.textContent = "Belum diisi";
-        apiKeyStatus.classList.remove("saved");
-      }
-    }
+  // Credentials (API Mode only works once saved)
+  const inputApiEndpoint = $("inputApiEndpoint");
+  const inputApiModel = $("inputApiModel");
+  const setKeyStatus = (saved) => {
+    apiKeyStatus.textContent = saved ? "Tersimpan" : "Belum disimpan";
+    apiKeyStatus.classList.toggle("saved", saved);
+  };
+  const credsBox = $("apiConfigWrap");
+  const showSaved = (saved) => { credsBox.classList.toggle("creds-saved", saved); setKeyStatus(saved); };
+  chrome.storage.local.get(["prelab_api_keys", "prelab_api_endpoint", "prelab_api_model", "prelab_creds_saved"], (res) => {
+    inputApiKey.value = res.prelab_api_keys || "";
+    inputApiEndpoint.value = res.prelab_api_endpoint || "";
+    inputApiModel.value = res.prelab_api_model || "";
+    showSaved(!!res.prelab_creds_saved);
+    requestAnimationFrame(() => requestAnimationFrame(() => credsBox.classList.remove("no-anim"))); // no animation on popup open
   });
+  $("btnEditCreds").addEventListener("click", () => { credsBox.classList.remove("creds-saved"); setKeyStatus(false); });
+  [inputApiKey, inputApiEndpoint, inputApiModel].forEach(el => el.addEventListener("input", () => setKeyStatus(false)));
 
-  // Save API Key on input
-  inputApiKey?.addEventListener("input", () => {
-    const val = inputApiKey.value.trim();
-    chrome.storage.local.set({ prelab_api_keys: val });
-    if (val) {
-      apiKeyStatus.textContent = "✓ Tersimpan";
-      apiKeyStatus.classList.add("saved");
-    } else {
-      apiKeyStatus.textContent = "Belum diisi";
-      apiKeyStatus.classList.remove("saved");
+  $("btnSaveCreds").addEventListener("click", () => {
+    const key = inputApiKey.value.trim();
+    const endpoint = inputApiEndpoint.value.trim();
+    const model = inputApiModel.value.trim();
+    if (!key || !model || !/^https?:\/\//i.test(endpoint)) {
+      setStatus("error", "Isi endpoint (http/https), API Key, dan Model terlebih dahulu.");
+      return;
     }
+    // Chrome closes this popup while its permission dialog is open, so a save placed in the dialog's callback never runs:
+    // store first, then ask (both inside the click gesture). Denial rolls the flag back; background re-checks the grant before every call.
+    const u = new URL(endpoint); // match patterns take no port
+    chrome.storage.local.set({
+      prelab_api_keys: key,
+      prelab_api_endpoint: endpoint,
+      prelab_api_model: model,
+      prelab_creds_saved: true,
+    });
+    chrome.permissions.request({ origins: [`${u.protocol}//${u.hostname}/*`] }, (granted) => {
+      if (!granted) { chrome.storage.local.set({ prelab_creds_saved: false }); showSaved(false); setStatus("error", "Izin akses ke endpoint ditolak. API Mode tidak aktif."); return; }
+      showSaved(true); setStatus("success", "Credentials tersimpan. API Mode siap dipakai.");
+    });
   });
 
   // Toggle API Key visibility
   btnToggleKeyVisibility?.addEventListener("click", () => {
     if (inputApiKey.type === "password") {
       inputApiKey.type = "text";
-      btnToggleKeyVisibility.textContent = "🔒";
+      btnToggleKeyVisibility.innerHTML = icon("eye-off");
     } else {
       inputApiKey.type = "password";
-      btnToggleKeyVisibility.textContent = "👁️";
+      btnToggleKeyVisibility.innerHTML = icon("eye");
     }
   });
 
@@ -302,6 +334,36 @@ async function scanQuestions() {
             if (qs.length) return qs;
           }
 
+          // JupyterLab/Notebook 7 only keeps editors for cells near the viewport in the DOM, so cells further down looked empty
+          // and were never found. When the app is exposed (src/jupyter-expose.js) read every cell from the notebook model instead.
+          const jw = window.jupyterapp?.shell?.currentWidget?.content?.widgets;
+          if (jw) {
+            const src = jw.map(w => ({ type: w.model.type, text: w.model.sharedModel.getSource() }));
+            src.forEach(c => {
+              if (c.type === "markdown" && (c.text.includes("Instruksi") || c.text.includes("Overview") || c.text.includes("Petunjuk") || c.text.includes("http"))) globalCtx += c.text.slice(0, 800) + "\n\n";
+            });
+            let qIndex = 0; const qs = [];
+            src.forEach((c, idx) => {
+              if (c.type !== "code") return;
+              const text = c.text.trim();
+              if (text.includes("# CODE HERE") || text.includes("<...>") || text.includes("# ...")) {
+                let ctx = "";
+                for (let p = Math.max(0, idx - 2); p < idx; p++) {
+                  const prev = src[p].text.trim();
+                  if (prev && !prev.includes("# CODE HERE")) ctx += prev.slice(0, 300) + "\n";
+                }
+                qs.push({
+                  index: qIndex++,
+                  type: "coding",
+                  globalContext: globalCtx.trim(),
+                  text: `${globalCtx ? `[Petunjuk & Modul]:\n${globalCtx.trim()}\n\n` : ""}[Konteks Modul]:\n${ctx}\n\n[Kode Soal]:\n${text}`,
+                  rawCode: text
+                });
+              }
+            });
+            if (qs.length) return qs;
+          }
+
           const jpCells = Array.from(document.querySelectorAll('.jp-CodeCell, .jp-Cell'));
           if (jpCells.length) {
             document.querySelectorAll(".jp-MarkdownCell, .cell.text").forEach(c => {
@@ -431,31 +493,32 @@ async function startAutoAnswer() {
   isRunning = true;
   setBtnLoading(true);
 
-  const modeRes = await chrome.storage.local.get(["prelab_run_mode", "prelab_web_engine", "prelab_api_keys"]);
+  const modeRes = await chrome.storage.local.get(["prelab_run_mode", "prelab_web_engine", "prelab_api_keys", "prelab_api_endpoint", "prelab_creds_saved"]);
   const mode = $("mode-web")?.classList.contains("active") ? "web" : (modeRes.prelab_run_mode || "api");
   const webEngine = $("web-chatgpt")?.classList.contains("active") ? "chatgpt" : ($("web-claude")?.classList.contains("active") ? "claude" : (modeRes.prelab_web_engine || "gemini"));
   const isWeb = mode === "web";
   const webEngineName = webEngine === "chatgpt" ? "ChatGPT Web" : webEngine === "claude" ? "Claude Web" : "Gemini Web";
 
   const hasImages = detectedQuestions.some(q => q.hasImages);
+  const modelName = (await chrome.storage.local.get("prelab_api_model")).prelab_api_model;
   const engineLabelEl = document.getElementById("engineLabel");
   const engineModelEl = document.getElementById("engineModel");
-  const engineName = isWeb ? webEngineName : (hasImages ? "SambaNova Vision" : "SambaNova Text");
+  const engineName = isWeb ? webEngineName : "API Mode";
 
   if (engineLabelEl) engineLabelEl.textContent = engineName;
-  if (engineModelEl) engineModelEl.textContent = isWeb ? (webEngine === "chatgpt" ? "GPT-4o" : "Gemini 2.5") : (hasImages ? "Meta-Llama-3.3-70B (Teks Saja)" : "Meta-Llama-3.3-70B");
+  if (engineModelEl) engineModelEl.textContent = isWeb ? (webEngine === "chatgpt" ? "GPT-4o" : "Gemini 2.5") : (modelName || "API");
 
   setStatus("active", `Mengirim ke ${engineName}...`);
   showProgress(true);
   log("info", "Memulai proses auto-jawab...");
-  log("info", `Routing: ${detectedQuestions.length} soal → ${engineName}${hasImages && !isWeb ? " (PERINGATAN: SambaNova tidak baca gambar!)" : ""}`);
+  log("info", `Routing: ${detectedQuestions.length} soal → ${engineName}`);
 
   try {
     const apiKeys = (modeRes.prelab_api_keys || "").trim();
 
-    if (mode === "api" && !apiKeys) {
-      setStatus("error", "API Key belum diisi! Masukkan key di atas.");
-      log("err", "API Key SambaNova/Groq belum diatur. Silakan masukkan API Key Anda.");
+    if (mode === "api" && !(modeRes.prelab_creds_saved && apiKeys && modeRes.prelab_api_endpoint)) {
+      setStatus("error", "Simpan endpoint & API Key dulu (tombol Simpan Credentials).");
+      log("err", "API Mode belum aktif: credentials belum disimpan.");
       if (inputApiKey) {
         inputApiKey.focus();
         inputApiKey.style.borderColor = "var(--error)";
@@ -502,10 +565,10 @@ function waitForCompletion() {
   let polls = 0;
   const poll = setInterval(async () => {
     polls++;
-    if (polls > 60) { // 60s timeout (OpenRouter cloud API)
+    if (polls > 120) { // 120s timeout
       clearInterval(poll);
-      setStatus("error", "Timeout: Ollama tidak merespon");
-      log("err", "Timeout 120 detik. Pastikan Ollama berjalan: ollama serve");
+      setStatus("error", "Timeout: AI tidak merespon");
+      log("err", "Timeout 120 detik. Periksa endpoint / koneksi AI.");
       resetState();
     }
 
@@ -535,7 +598,7 @@ function waitForCompletion() {
 }
 
 function onCompleted(count) {
-  setStatus("success", `✓ Selesai! ${count || "Semua"} soal terjawab`);
+  setStatus("success", `Selesai! ${count || "Semua"} soal terjawab`);
   log("ok", `Auto-jawab selesai. ${count || detectedQuestions.length} jawaban terisi.`);
   $("statAnswered").textContent = count || detectedQuestions.length;
   $("statPending").textContent = 0;
@@ -554,12 +617,12 @@ function setBtnLoading(loading) {
   if (loading) {
     btnStart.disabled = true;
     btnStart.classList.add("loading");
-    if (btnIcon) { btnIcon.className = "spin"; btnIcon.textContent = "⟳"; }
+    if (btnIcon) { btnIcon.className = "spin"; btnIcon.innerHTML = icon("spinner"); }
     btnText.textContent = "Memproses...";
   } else {
     btnStart.disabled = false;
     btnStart.classList.remove("loading");
-    if (btnIcon) { btnIcon.className = "btn-sparkle"; btnIcon.textContent = "✦"; }
+    if (btnIcon) { btnIcon.className = "btn-sparkle"; btnIcon.innerHTML = icon("sparkle"); }
     btnText.textContent = "Mulai Auto-Jawab";
   }
 }
@@ -577,15 +640,14 @@ function resetState() {
 function toggleLog() {
   logVisible = !logVisible;
   logSection.classList.toggle("visible", logVisible);
-  logToggle.textContent = logVisible ? "📋 Sembunyikan Log" : "📋 Tampilkan Log";
+  logToggle.innerHTML = icon("list") + (logVisible ? " Sembunyikan Log" : " Tampilkan Log");
 }
 
 function log(type, text) {
   const line = document.createElement("div");
   line.className = "log-line " + type;
   const time = new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-  const prefix = type === "ok" ? "✓" : type === "err" ? "✗" : "›";
-  line.textContent = `${time} ${prefix} ${text}`;
+  line.textContent = `${time}  ${text}`;
   logBox.appendChild(line);
   logBox.scrollTop = logBox.scrollHeight;
 }

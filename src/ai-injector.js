@@ -67,7 +67,8 @@ Soal-soal yang perlu dijawab:
     questions.forEach((q, i) => {
       const typeName = typeMap[q.type] || q.type;
       prompt += `--- Soal ${i + 1} (index: ${q.index}, tipe: ${typeName}) ---\n`;
-      prompt += `${q.text}\n`;
+      // the module instructions are already added once above; repeating them in every question blew the prompt past the size cap and cut off the last questions
+      prompt += `${q.text.replace(/^\[Petunjuk & Modul\]:[\s\S]*?\n\n(?=\[Konteks Modul\])/, "")}\n`;
 
       if (q.options && q.options.length) {
         prompt += "Pilihan:\n";
@@ -765,10 +766,10 @@ Integrasi nasional sangat penting bagi negara baru berkembang karena dapat menya
       document.body.appendChild(overlay);
 
       const style = document.createElement("style");
-      style.textContent = `@keyframes prelabFadeIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }`;
+      style.textContent = `@keyframes spin { to { transform: rotate(360deg); } } @keyframes prelabFadeIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }`;
       document.head.appendChild(style);
     }
-    overlay.innerHTML = `<span style="animation:spin 1s linear infinite;display:inline-block">⟳</span> ${text}`;
+    overlay.innerHTML = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="animation:spin 1s linear infinite"><path d="M12 3a9 9 0 109 9"/></svg> ${String(text).replace(/^[^\p{L}\p{N}(]+/u, "")}`;
   }
 
   function hideGeminiOverlay() {

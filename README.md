@@ -1,118 +1,140 @@
-# UGLab 2.1 — Auto-Jawab LMS UG
+# UGLab 2.1.1 — Auto-Jawab Soal Praktikum Gunadarma
 
-Auto-jawab soal praktikum iLab & v-class Gunadarma menggunakan AI (Gemini, ChatGPT).
+Ekstensi Chrome yang membaca soal praktikum di iLab / v-class Gunadarma (Moodle), Google Colab, dan Jupyter, mengirimnya ke AI, lalu mengisi jawabannya otomatis.
 
----
+Dua cara memakai AI:
 
-## 🚀 Cara Install
-
-1. Buka Chrome → `chrome://extensions/`
-2. Aktifkan **Developer Mode** (pojok kanan atas)
-3. Klik **"Load unpacked"**
-4. Pilih folder `prelab/` ini
-5. Ekstensi siap digunakan!
+| Mode | AI yang dipakai | Perlu |
+|------|-----------------|-------|
+| **API Mode** | Endpoint OpenAI-compatible milik Anda sendiri | Endpoint, API Key, Model |
+| **Web Mode** | Gemini, ChatGPT, atau Claude lewat tab browser | Login ke akun AI tersebut |
 
 ---
 
-## 📋 Cara Pakai
+## Fitur baru di versi 2.1.1
 
-1. **Login ke AI pilihan Anda** (mis. `gemini.google.com` atau `chatgpt.com`)
-2. **Buka halaman kuis/soal** di iLab atau v-class Gunadarma
-3. Klik ikon **UGLab ⚡** di toolbar Chrome
-4. Popup akan otomatis mendeteksi soal di halaman
-5. (Opsional) Tulis instruksi tambahan di textarea
-6. Klik **"Mulai Auto-Jawab"**
-7. Tab AI akan terbuka otomatis, soal dikirim, dan jawaban diisi!
+**API Mode**
+- Endpoint, API Key, dan Model diisi sendiri (contoh endpoint: `https://api.zrouter.dev/v1/`). Tidak ada lagi provider atau model yang di-hardcode.
+- Tombol **Simpan Credentials** dengan transisi halus ke tampilan "Credentials Tersimpan", dan tombol **Ubah Credentials** untuk mengganti endpoint, key, atau model.
+- API Mode terkunci sampai credentials disimpan. Chrome meminta izin akses ke endpoint saat Anda menyimpan.
+- Prompt tidak lagi terpotong diam-diam: petunjuk modul tidak diulang di setiap soal, sehingga notebook dengan banyak soal terkirim utuh.
 
----
+**Google Colab dan Jupyter**
+- Semua soal terisi sekali jalan, termasuk cell yang berada jauh di bawah layar (di JupyterLab/Notebook 7 jawaban ditulis lewat model notebook, bukan DOM).
+- Jupyter online dengan kernel Pyodide: pustaka yang tidak disediakan kernel (misalnya `seaborn`) dipasang otomatis tanpa menulis kode ke cell. Pustaka yang sudah terpasang tidak disentuh.
+- `pd.read_csv("https://...")` dan `requests` bekerja di Pyodide.
+- Jawaban berupa penjelasan (cell `# ...`) otomatis dijadikan komentar, bukan teks mentah.
 
-## 🎯 Tipe Soal yang Didukung
+**Soal koding Moodle (CodeRunner)**
+- Template dibaca utuh dari editor, jadi kode tidak terpotong di tengah.
+- Jawaban dimasukkan ke editor Ace/CodeMirror meski situs memblokir skrip inline.
+- Kode pengujian dari soal tidak disalin ke jawaban (menghindari output ganda), dan baris header UI seperti `Python` / `Run` dibuang.
 
-| Tipe | Deskripsi |
-|------|-----------|
-| **Pilihan Ganda** | Radio button, otomatis klik opsi yang benar |
-| **True/False** | Pilih Benar atau Salah |
-| **Multi-Select** | Checkbox, centang semua jawaban yang benar |
-| **Isian Singkat** | Input text, otomatis diisi |
-| **Essay** | Textarea / Atto editor Moodle |
-| **Coding** | Mendukung CodeMirror & Ace Editor |
-| **Multi-Kotak** | Isi beberapa input text sekaligus |
+**Web Mode**
+- Satu prompt berisi semua soal, jawaban diambil sekali, tanpa membuka tab berulang kali.
+- Prompt tidak terkirim dua kali, dan tombol Stop tidak lagi tertekan saat AI sedang menjawab.
+- Gambar soal ditempel ke chat AI sebagai PNG.
 
----
-
-## 🔧 Arsitektur
-
-```
-┌─────────────────┐     scrape soal      ┌──────────────────┐
-│   Popup UI      │ ──────────────────► │  LMS Content     │
-│  (popup.html)   │                      │  Script          │
-└────────┬────────┘                      │  (lms-content.js)│
-         │ PRELAB_START                  └────────┬─────────┘
-         ▼                                        │ PRELAB_ANSWERS
-┌─────────────────┐    open/relay        ┌────────▼─────────┐
-│   Background    │ ──────────────────► │  AI Tab          │
-│  Service Worker │ ◄────────────────── │  Injector        │
-│  (background.js)│     AI_RESULT        │  (ai-injector.js)│
-└─────────────────┘                      └──────────────────┘
-```
-
-**Flow:**
-1. Popup → Background: kirim payload soal
-2. Background: buka tab AI baru (atau reuse)
-3. AI Injector: deteksi payload pending, inject prompt ke AI
-4. AI Injector: tunggu streaming selesai, extract JSON
-5. Background: relay jawaban ke tab LMS
-6. LMS Content Script: isi jawaban ke form
+**Tampilan**
+- Ikon garis bergaya SF Symbols menggantikan emoji.
 
 ---
 
-## ⚙️ Konfigurasi & Mode Eksekusi
+## Cara Install
 
-### 1. API Mode (Fast)
-Menggunakan API SambaNova / Groq Cloud secara langsung.
-1. Buka popup ekstensi UGLab.
+1. Buka Chrome, ke `chrome://extensions/`.
+2. Aktifkan **Developer Mode** (pojok kanan atas).
+3. Klik **Load unpacked**.
+4. Pilih folder proyek ini (folder yang berisi `manifest.json`).
+5. Setelah memperbarui kode, klik tombol reload pada kartu UGLab, lalu muat ulang halaman soal.
+
+---
+
+## Cara Pakai API Mode
+
+1. Buka halaman soal (iLab, v-class, Colab, atau Jupyter) lalu klik ikon **UGLab** di toolbar.
 2. Pilih **API Mode**.
-3. Masukkan **SambaNova API Key** Anda pada input box (bisa didapatkan gratis di [SambaNova Cloud](https://cloud.sambanova.ai/)).
-4. Key akan disimpan secara lokal dan aman di browser (`chrome.storage.local`), tidak akan pernah ter-commit ke git.
-5. Anda dapat memasukkan beberapa key yang dipisahkan dengan koma jika ingin menggunakan rotasi rate-limit.
+3. Isi tiga kolom:
+   - **Endpoint**: alamat dasar API yang kompatibel dengan OpenAI, diawali `http://` atau `https://`. Ekstensi memanggil `{endpoint}/chat/completions`.
+   - **API Key**: boleh lebih dari satu, dipisahkan koma, untuk rotasi saat terkena rate limit.
+   - **Model**: nama model persis seperti di penyedia API Anda (contoh `gpt-4o-mini`). Kolom ini wajib.
+4. Klik **Simpan Credentials**. Chrome menampilkan dialog izin akses ke endpoint; pilih **Allow**. Box berubah menjadi "Credentials Tersimpan".
+5. Klik **Mulai Auto-Jawab**. Soal terdeteksi, dikirim ke endpoint, dan jawaban diisi otomatis.
+6. Untuk mengganti credentials, klik **Ubah Credentials**, ubah isiannya, lalu simpan lagi.
 
-### 2. Web Mode (Visual)
-Menggunakan antarmuka web AI (Gemini Web, ChatGPT Web, atau Claude Web) secara otomatis tanpa memerlukan API Key.
-1. Pilih **Web Mode** di popup UGLab.
-2. Pilih engine yang diinginkan (Gemini, ChatGPT, Claude).
-3. Pastikan Anda telah login ke akun AI tersebut pada browser.
-
-### 3. URL Target LMS
-- **iLab** (Moodle-based): `https://ilab.gunadarma.ac.id/*`
-- **v-class**: `https://v-class.gunadarma.ac.id/*`
-- **Ujian Online**: `https://ujian.gunadarma.ac.id/*`
-
----
-
-## 🔍 Troubleshooting
-
-**Soal tidak terdeteksi?**
-- Pastikan halaman sudah dimuat penuh
-- Klik "Scan Ulang Soal" di popup
-- Cek apakah halaman adalah halaman kuis aktif
-
-**AI tidak merespon?**
-- Pastikan sudah login ke penyedia AI yang dipilih
-- Coba refresh tab AI
-- Cek koneksi internet
-
-**Jawaban tidak terisi?**
-- Beberapa soal mungkin menggunakan format yang berbeda
-- Coba tambahkan instruksi di textarea "Instruksi Tambahan"
+Catatan:
+- Credentials disimpan di `chrome.storage.local` pada profil Chrome Anda sendiri. Tidak ada di folder proyek, tidak ikut ter-clone atau ter-zip, dan tidak tersinkron ke perangkat lain.
+- Jangan menaruh key di README, issue, atau file apa pun di repo.
+- Soal bergambar hanya bisa dijawab kalau model yang Anda pilih mendukung gambar.
+- Pakai endpoint `https://`; dengan `http://` key dikirim tanpa enkripsi.
 
 ---
 
-## 📝 Catatan
+## Cara Pakai Web Mode
 
-- Ekstensi ini untuk tujuan edukasi dan latihan
-- Selalu verifikasi jawaban sebelum submit
-- Gunakan secara bertanggung jawab
+1. Buka tab AI pilihan Anda dan **login** (`gemini.google.com`, `chatgpt.com`, atau `claude.ai`).
+2. Buka halaman soal lalu klik ikon **UGLab**.
+3. Pilih **Web Mode** dan engine yang diinginkan (Gemini, ChatGPT, atau Claude).
+4. (Opsional) Tulis instruksi tambahan, misalnya "Jawab dalam bahasa Indonesia".
+5. Klik **Mulai Auto-Jawab**. Tab AI terbuka sendiri, semua soal dikirim dalam satu prompt, jawabannya dibaca, lalu diisi ke halaman soal. Tab AI ditutup otomatis setelah selesai.
+6. Web Mode tidak memerlukan API Key.
 
 ---
 
-*UGLab v2.1 — Made for Gunadarma Students*
+## Tipe Soal yang Didukung
+
+| Tipe | Keterangan |
+|------|------------|
+| Pilihan ganda, Benar/Salah | Klik opsi yang dipilih |
+| Multi-select | Centang semua jawaban yang benar |
+| Isian singkat, multi-kotak, menjodohkan | Input dan dropdown diisi |
+| Essay | Textarea / editor Moodle |
+| Koding (CodeRunner) | Ace dan CodeMirror |
+| Notebook | Google Colab dan Jupyter (cell dengan `# CODE HERE`, `<...>`, atau `# ...`) |
+
+URL target: `praktikum.gunadarma.ac.id`, `v-class.gunadarma.ac.id`, `elearning.gunadarma.ac.id`, `ujian.gunadarma.ac.id`, `colab.research.google.com`, `jupyter.org`, dan `localhost`.
+
+---
+
+## Arsitektur
+
+```
+Popup (popup.html / popup.js)
+   │  scan soal, PRELAB_START
+   ▼
+Background service worker (src/background.js) ── API Mode ──► endpoint /chat/completions
+   │  Web Mode: buka / pakai tab AI
+   ▼
+AI Injector (src/ai-injector.js): isi prompt, tunggu jawaban, ekstrak JSON
+   │  GEMINI_DONE
+   ▼
+Background ── jawaban ──► halaman soal
+                          • Moodle: src/lms-content.js
+                          • Colab / Jupyter: src/notebook-content.js, src/jupyter-expose.js
+```
+
+---
+
+## Troubleshooting
+
+**Soal tidak terdeteksi?** Pastikan halaman sudah dimuat penuh, klik **Scan Ulang Soal**, dan pastikan halamannya kuis atau notebook yang aktif.
+
+**API Mode tidak jalan?** Pastikan status "Credentials Tersimpan" dan dialog izin sudah di-Allow. Kalau muncul `Failed to fetch`, simpan ulang credentials; kalau muncul `API 401`, key atau model salah.
+
+**AI tidak merespon di Web Mode?** Pastikan sudah login, coba muat ulang tab AI, dan cek koneksi.
+
+**Hanya sebagian soal terisi?** Klik **Scan Ulang Soal**, lalu ulangi. Kalau memakai API Mode, pastikan model Anda mampu menjawab semua soal sekaligus.
+
+**Jupyter: `ModuleNotFoundError` atau `Host is unreachable`?** Muat ulang tab notebook setelah memperbarui ekstensi supaya instalasi pustaka otomatis aktif.
+
+---
+
+## Catatan
+
+- Ekstensi ini untuk tujuan edukasi dan latihan.
+- Selalu periksa jawaban sebelum submit.
+- Gunakan secara bertanggung jawab.
+
+---
+
+*UGLab v2.1.1 — Made for Gunadarma Students*
