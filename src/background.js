@@ -7,6 +7,9 @@
 
 let currentKeyIndex = 0;
 
+// Run state lives in storage (not in the popup) so a reopened popup can show what the service worker is doing.
+const setRun = (state, text) => chrome.storage.local.set({ prelab_run_state: { state, text: String(text), ts: Date.now() } });
+
 async function getApiKeys() {
   const stored = await chrome.storage.local.get(["prelab_api_keys", "prelab_api_key"]);
   const raw = stored.prelab_api_keys || stored.prelab_api_key || "";
@@ -138,6 +141,7 @@ async function handleGeminiDone(data) {
 }
 
 function handleGeminiError(error) {
+  setRun("error", error);
   chrome.storage.local.get("prelab_pending_meta", (res) => {
     const lmsTabId = res.prelab_pending_meta?.lmsTabId;
     if (lmsTabId) {
@@ -164,6 +168,7 @@ async function handleStart(msg, sendResponse) {
   (async () => {
     try {
       startKeepAlive();
+      setRun("running", "Memproses soal...");
       const hasImages = questions.some(q => q.images && q.images.length > 0);
 
       const notify = (text, variant = "loading") => chrome.tabs.sendMessage(lmsTabId, {
@@ -252,6 +257,7 @@ async function handleStart(msg, sendResponse) {
 
     } catch (err) {
       chrome.tabs.sendMessage(lmsTabId, { type: "PRELAB_ERROR", error: err.message }).catch(() => { });
+      setRun("error", err.message);
       chrome.runtime.sendMessage({ type: "PRELAB_POPUP_ERROR", error: err.message }).catch(() => { });
     } finally {
       stopKeepAlive();
@@ -846,6 +852,7 @@ async function deliverAnswersToLMS(lmsTabId, answers) {
   } catch { }
 
   // Beritahu popup bahwa proses selesai
+  setRun("done", answers.length);
   chrome.runtime.sendMessage({ type: "PRELAB_POPUP_DONE", count: answers.length }).catch(() => { });
 }
 

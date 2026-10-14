@@ -61,7 +61,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   hydrateIcons();
   setupListeners();
   await detectCurrentTab();
+  // the service worker keeps running when this popup is closed: pick the run state back up on reopen
+  chrome.storage.local.get("prelab_run_state", (res) => applyRunState(res.prelab_run_state, true));
+  chrome.storage.onChanged.addListener((ch) => { if (ch.prelab_run_state) applyRunState(ch.prelab_run_state.newValue, false); });
 });
+
+function applyRunState(rs, onLoad) {
+  if (!rs || Date.now() - rs.ts > 10 * 60 * 1000) return;
+  if (rs.state === "running") { isRunning = true; setBtnLoading(true); showProgress(true); setStatus("active", rs.text); }
+  else if (rs.state === "done") { if (isRunning) onCompleted(Number(rs.text)); else if (onLoad && Date.now() - rs.ts < 2 * 60 * 1000) setStatus("success", `Selesai! ${rs.text} soal terjawab`); }
+  else if (rs.state === "error" && (isRunning || onLoad)) { setStatus("error", "Error: " + rs.text); resetState(); }
+}
 
 function setupListeners() {
   extraPrompt.addEventListener("input", () => {
